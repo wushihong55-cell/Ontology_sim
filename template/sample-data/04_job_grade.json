@@ -1,0 +1,84 @@
+{
+  "data": [
+    {
+      "id": "JG-P1",
+      "code": "P1",
+      "name": "初级工程师",
+      "gradeType": "技术序列",
+      "tier": "低档",
+      "accommodationLimit": 300,
+      "dailyMealAllowance": 80,
+      "airClass": "经济舱"
+    },
+    {
+      "id": "JG-P2",
+      "code": "P2",
+      "name": "工程师",
+      "gradeType": "技术序列",
+      "tier": "低档",
+      "accommodationLimit": 350,
+      "dailyMealAllowance": 80,
+      "airClass": "经济舱"
+    },
+    {
+      "id": "JG-P3",
+      "code": "P3",
+      "name": "高级工程师",
+      "gradeType": "技术序列",
+      "tier": "低档",
+      "accommodationLimit": 400,
+      "dailyMealAllowance": 100,
+      "airClass": "经济舱"
+    },
+    {
+      "id": "JG-P4",
+      "code": "P4",
+      "name": "资深工程师",
+      "gradeType": "技术序列",
+      "tier": "低档",
+      "accommodationLimit": 400,
+      "dailyMealAllowance": 100,
+      "airClass": "经济舱"
+    },
+    {
+      "id": "JG-P5",
+      "code": "P5",
+      "name": "技术专家",
+      "gradeType": "技术序列",
+      "tier": "中档",
+      "accommodationLimit": 550,
+      "dailyMealAllowance": 120,
+      "airClass": "经济舱"
+    },
+    {
+      "id": "JG-P6",
+      "code": "P6",
+      "name": "高级技术专家",
+      "gradeType": "技术序列",
+      "tier": "中档",
+      "accommodationLimit": 700,
+      "dailyMealAllowance": 150,
+      "airClass": "经济舱"
+    },
+    {
+      "id": "JG-P7",
+      "code": "P7",
+      "name": "部门总监",
+      "gradeType": "技术序列",
+      "tier": "高档",
+      "accommodationLimit": 900,
+      "dailyMealAllowance": 200,
+      "airClass": "经济舱"
+    },
+    {
+      "id": "JG-P8",
+      "code": "P8",
+      "name": "技术VP",
+      "gradeType": "技术序列",
+      "tier": "高档",
+      "accommodationLimit": 1500,
+      "dailyMealAllowance": 300,
+      "airClass": "商务舱"
+    }
+  ]
+}

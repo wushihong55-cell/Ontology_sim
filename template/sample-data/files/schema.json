@@ -1,0 +1,279 @@
+{
+  "schema_version": "1.0",
+  "domain": "差旅费报销",
+  "database": "neo4j",
+  "description": "基于本体论设计的差旅费报销场景图数据库Schema。节点与关系的设计原则：1) 凡是参与多条记录关联、需要被独立查询/聚合的概念，提升为节点，不压缩为属性；2) 关系类型的两端label组合保持单一语义，避免同一relType连接多组不同含义的节点对；3) 异构子类型（如交通方式）采用'公共节点+类型特化属性'分层，不强行拍平成统一字段集。",
+
+  "nodes": [
+    {
+      "label": "ExpenseReport",
+      "label_cn": "报销单",
+      "description": "差旅费报销单据，是整个报销流程的根节点，对应原始数据的顶层对象。",
+      "primary_key": "report_id",
+      "properties": [
+        { "name": "report_id", "type": "String", "required": true, "unique": true, "source_field": "单据编号", "note": "样例值100001" },
+        { "name": "business_type", "type": "String", "required": true, "source_field": "业务类型", "note": "如'差旅费报销单'，预留多业务类型扩展" },
+        { "name": "trip_type", "type": "String", "required": false, "source_field": "出差类型", "note": "如'公务出差'" },
+        { "name": "status", "type": "String", "required": false, "note": "样例数据未提供，建议补充：草稿/审批中/已审批/已支付/已结算" },
+        { "name": "total_reimburse_amount", "type": "Float", "required": true, "source_field": "费用分摊明细[].报销金额(汇总)", "note": "报销口径总金额，等于资金支付信息.支付金额，建议入库时校验两者一致" }
+      ]
+    },
+    {
+      "label": "Company",
+      "label_cn": "公司主体",
+      "description": "法人主体，既可作为报销单所属公司，也可作为费用分摊主体、采购方、销售方。同一实体在不同语境下复用此节点，靠关系类型区分角色。",
+      "primary_key": "company_id",
+      "properties": [
+        { "name": "company_id", "type": "String", "required": true, "unique": true, "note": "建议用统一社会信用代码作为唯一标识，样例数据中部分采购方代码已给出" },
+        { "name": "company_name", "type": "String", "required": true, "source_field": "公司 / 购买方名称 / 销售方名称" },
+        { "name": "tax_id", "type": "String", "required": false, "source_field": "购买方/销售方统一社会信用代码" }
+      ]
+    },
+    {
+      "label": "Department",
+      "label_cn": "部门",
+      "description": "报销单所属部门，用于费用归集和预算分析。",
+      "primary_key": "department_id",
+      "properties": [
+        { "name": "department_id", "type": "String", "required": true, "unique": true },
+        { "name": "department_name", "type": "String", "required": true, "source_field": "部门" }
+      ]
+    },
+    {
+      "label": "Employee",
+      "label_cn": "员工",
+      "description": "公司员工节点。注意样例数据中存在'报销人'与'行程明细中的实际出行人(乘车人/旅客/住宿人)'不一致的情况（王晓玥 vs 王晓明），两者均映射到此节点，但通过不同关系类型区分角色，不可合并为同一属性字段。",
+      "primary_key": "employee_id",
+      "properties": [
+        { "name": "employee_id", "type": "String", "required": true, "unique": true, "note": "样例数据未提供工号，建议以姓名+手机号或HR系统ID生成，姓名单独存在重名风险" },
+        { "name": "employee_name", "type": "String", "required": true, "source_field": "报销人 / 乘车人 / 旅客 / 住宿人" },
+        { "name": "mobile", "type": "String", "required": false, "source_field": "行程人手机号" }
+      ]
+    },
+    {
+      "label": "TripRequest",
+      "label_cn": "出差申请",
+      "description": "出差审批单。样例原始数据未显式给出此节点，但'线下预订审批描述'字段中反复出现相同审批单号(SP20260227001)，说明这是被隐藏的一等概念，必须独立建模为节点，否则无法回答'某次出差申请关联了哪些行程/住宿'类问题。",
+      "primary_key": "approval_no",
+      "properties": [
+        { "name": "approval_no", "type": "String", "required": true, "unique": true, "source_field": "线下预订审批描述(解析审批单号)", "note": "样例值SP20260227001" },
+        { "name": "origin_city", "type": "String", "required": false, "source_field": "出发地" },
+        { "name": "destination_city", "type": "String", "required": false, "source_field": "目的地" },
+        { "name": "via_cities", "type": "String", "required": false, "source_field": "途径城市", "note": "样例值为'无'，ODL层需识别为空值占位符" },
+        { "name": "start_date", "type": "Date", "required": true, "note": "解析自'出差时间'字段，样例值2026-03-01" },
+        { "name": "end_date", "type": "Date", "required": true, "note": "解析自'出差时间'字段，样例值2026-03-04" }
+      ]
+    },
+    {
+      "label": "TransportSegment",
+      "label_cn": "交通行程段",
+      "description": "单段交通行程的公共抽象节点，火车/飞机/出租车等不同交通方式作为该节点的specialized子类型，通过transport_mode区分，并各自携带专属属性。不强行将燃油附加费、座位等级等异构字段拍平进同一组通用属性。",
+      "primary_key": "segment_id",
+      "properties": [
+        { "name": "segment_id", "type": "String", "required": true, "unique": true, "note": "建议用发票号码或电子客票号/行程单ID生成" },
+        { "name": "transport_mode", "type": "String", "required": true, "source_field": "行程类型/交通工具", "enum": ["火车", "飞机", "出租车", "汽车", "地铁", "其他"] },
+        { "name": "departure_date", "type": "Date", "required": true, "source_field": "出发日期" },
+        { "name": "arrival_date", "type": "Date", "required": true, "source_field": "到达日期" },
+        { "name": "departure_location", "type": "String", "required": true, "source_field": "出发地/发站/出发/起点" },
+        { "name": "arrival_location", "type": "String", "required": true, "source_field": "到达地/到站/到达/终点" },
+        { "name": "reimburse_amount", "type": "Float", "required": true, "source_field": "实际支付金额", "note": "明确声明：聚合求和时统一使用此字段，不使用票价/合计/价税合计等中间口径字段，避免LLM选错金额字段" },
+        { "name": "invoice_no", "type": "String", "required": false, "source_field": "发票号码" }
+      ],
+      "specialized_properties": {
+        "火车": ["席位号", "车次", "座位等级", "退票费", "二维码", "电子客票号"],
+        "飞机": ["座位等级", "燃油附加费", "增值税税率", "增值税税额", "民航发展基金", "其他税费", "保险费", "开票状态", "电子客票号"],
+        "出租车/其他": ["车型", "行程单ID", "税率", "税额", "不含税金额", "税目"]
+      }
+    },
+    {
+      "label": "Accommodation",
+      "label_cn": "住宿记录",
+      "description": "酒店住宿明细节点。",
+      "primary_key": "accommodation_id",
+      "properties": [
+        { "name": "accommodation_id", "type": "String", "required": true, "unique": true, "note": "建议用发票号码生成" },
+        { "name": "checkin_date", "type": "Date", "required": true, "source_field": "入住日期" },
+        { "name": "checkout_date", "type": "Date", "required": true, "source_field": "退房日期" },
+        { "name": "hotel_name", "type": "String", "required": true, "source_field": "酒店名称" },
+        { "name": "location", "type": "String", "required": false, "source_field": "所在位置" },
+        { "name": "unit_price", "type": "Float", "required": false, "source_field": "住宿单价" },
+        { "name": "reimburse_amount", "type": "Float", "required": true, "source_field": "实际支付金额", "note": "同TransportSegment，聚合统一使用此字段" },
+        { "name": "invoice_no", "type": "String", "required": false, "source_field": "发票号码" }
+      ]
+    },
+    {
+      "label": "Invoice",
+      "label_cn": "发票",
+      "description": "发票作为独立节点，而非附属属性，原因：发票号码具有唯一性、可被税务稽核单独查询，且销售方信息（如滴滴出行/希尔顿酒店）属于独立的商业实体概念，不应内嵌为行程/住宿节点的字符串属性。",
+      "primary_key": "invoice_no",
+      "properties": [
+        { "name": "invoice_no", "type": "String", "required": true, "unique": true, "source_field": "发票号码" },
+        { "name": "issue_date", "type": "Date", "required": true, "source_field": "开票日期" },
+        { "name": "amount_with_tax", "type": "Float", "required": true, "source_field": "价税合计/合计" },
+        { "name": "amount_without_tax", "type": "Float", "required": false, "source_field": "不含税金额" },
+        { "name": "tax_amount", "type": "Float", "required": false, "source_field": "税额" },
+        { "name": "tax_rate", "type": "String", "required": false, "source_field": "税率/增值税税率" },
+        { "name": "tax_category", "type": "String", "required": false, "source_field": "税目" }
+      ]
+    },
+    {
+      "label": "CostAllocation",
+      "label_cn": "费用分摊记录",
+      "description": "费用分摊明细节点，记录报销总额在不同分摊主体间的分配。样例数据中存在'费用分摊主体=无,分摊比例=0%,报销金额=0'的占位记录，本体层须显式标注为非业务实体，避免被误统计为真实分摊方。",
+      "primary_key": "allocation_id",
+      "properties": [
+        { "name": "allocation_id", "type": "String", "required": true, "unique": true, "note": "建议用report_id+序号生成" },
+        { "name": "allocation_ratio", "type": "String", "required": true, "source_field": "分摊比例" },
+        { "name": "allocation_amount", "type": "Float", "required": true, "source_field": "报销金额" },
+        { "name": "is_placeholder", "type": "Boolean", "required": true, "default": false, "note": "当费用分摊主体='无'或分摊比例='0%'时应置为true，供ODL层过滤规则使用" }
+      ]
+    },
+    {
+      "label": "Payment",
+      "label_cn": "资金支付记录",
+      "description": "实际资金支付信息，与CostAllocation（业务分摊口径）分离建模，因为支付方式/对私对公等属于资金流转范畴，与费用归集口径是两套不同的业务视角，合并会造成查询歧义。",
+      "primary_key": "payment_id",
+      "properties": [
+        { "name": "payment_id", "type": "String", "required": true, "unique": true, "note": "建议用report_id生成，假定一单一次支付" },
+        { "name": "payment_method", "type": "String", "required": true, "source_field": "付款方式" },
+        { "name": "payment_amount", "type": "Float", "required": true, "source_field": "支付金额" },
+        { "name": "private_payment_amount", "type": "Float", "required": false, "source_field": "对私支付", "note": "样例中为人名+隐含金额，需结合payment_amount解析为对私支付的金额" },
+        { "name": "public_payment_amount", "type": "Float", "required": false, "source_field": "对公支付" }
+      ]
+    }
+  ],
+
+  "relationships": [
+    {
+      "type": "SUBMITTED_BY",
+      "type_cn": "由...报销",
+      "from": "ExpenseReport",
+      "to": "Employee",
+      "cardinality": "N:1",
+      "description": "报销单的报销人/提交人。明确区分于TRAVELED_BY，不可混用。"
+    },
+    {
+      "type": "BELONGS_TO_DEPT",
+      "type_cn": "所属部门",
+      "from": "ExpenseReport",
+      "to": "Department",
+      "cardinality": "N:1",
+      "description": "报销单归属部门，用于部门维度的费用汇总。注意：此关系类型专用于ExpenseReport->Department，不与其他'所属'语义关系（如员工所属部门）复用同一relType，避免关系语义过载。"
+    },
+    {
+      "type": "FILED_BY_COMPANY",
+      "type_cn": "报销主体公司",
+      "from": "ExpenseReport",
+      "to": "Company",
+      "cardinality": "N:1",
+      "description": "报销单所属法人主体。"
+    },
+    {
+      "type": "BASED_ON_TRIP",
+      "type_cn": "基于出差申请",
+      "from": "ExpenseReport",
+      "to": "TripRequest",
+      "cardinality": "N:1",
+      "description": "报销单关联的出差审批单。业务上允许一次出差分多次报销，故为N:1而非1:1，设计时需显式声明，避免被误建为1:1。"
+    },
+    {
+      "type": "TRAVELED_BY",
+      "type_cn": "实际出行人",
+      "from": "TripRequest",
+      "to": "Employee",
+      "cardinality": "N:N",
+      "description": "出差申请关联的实际出行人，可能与报销人不同（如本样例：报销人王晓玥，实际出行人王晓明）。此关系与SUBMITTED_BY语义严格区分，是诊断LLM理解错误的关键校验点。"
+    },
+    {
+      "type": "INCLUDES_SEGMENT",
+      "type_cn": "包含交通行程段",
+      "from": "TripRequest",
+      "to": "TransportSegment",
+      "cardinality": "1:N"
+    },
+    {
+      "type": "INCLUDES_ACCOMMODATION",
+      "type_cn": "包含住宿记录",
+      "from": "TripRequest",
+      "to": "Accommodation",
+      "cardinality": "1:N"
+    },
+    {
+      "type": "HAS_INVOICE",
+      "type_cn": "对应发票",
+      "from": "TransportSegment",
+      "to": "Invoice",
+      "cardinality": "1:1",
+      "description": "注意：样例数据中火车票段未提供独立的税额拆分字段，可能缺少规整发票节点，入库时需做缺失值容错，不可假定每条TransportSegment都能生成完整Invoice。"
+    },
+    {
+      "type": "HAS_INVOICE",
+      "type_cn": "对应发票",
+      "from": "Accommodation",
+      "to": "Invoice",
+      "cardinality": "1:1",
+      "description": "与上一条共用relType名称，但这是有意为之：两端label组合不同(TransportSegment->Invoice vs Accommodation->Invoice)，语义一致（都表示'对应发票'），不构成语义过载，区别于第一步诊断中要避免的'同relType连接不同语义'问题。"
+    },
+    {
+      "type": "ISSUED_BY",
+      "type_cn": "销售方",
+      "from": "Invoice",
+      "to": "Company",
+      "cardinality": "N:1",
+      "description": "发票的销售方（如滴滴出行、希尔顿酒店），与FILED_BY_COMPANY的'报销主体公司'角色严格区分，同一Company节点可能同时承担两种角色。"
+    },
+    {
+      "type": "PURCHASED_BY",
+      "type_cn": "采购方",
+      "from": "Invoice",
+      "to": "Company",
+      "cardinality": "N:1",
+      "description": "发票的购买方，样例数据中通常与FILED_BY_COMPANY指向同一公司，但语义上是独立角色，须独立声明关系，不可与FILED_BY_COMPANY合并。"
+    },
+    {
+      "type": "ALLOCATED_TO",
+      "type_cn": "分摊给",
+      "from": "ExpenseReport",
+      "to": "CostAllocation",
+      "cardinality": "1:N"
+    },
+    {
+      "type": "ALLOCATION_SUBJECT",
+      "type_cn": "分摊主体",
+      "from": "CostAllocation",
+      "to": "Company",
+      "cardinality": "N:1",
+      "description": "占位记录(is_placeholder=true)的此关系可不创建，由ODL规则决定是否物理建边，建议不建边以避免空分摊主体污染图结构。"
+    },
+    {
+      "type": "PAID_VIA",
+      "type_cn": "支付记录",
+      "from": "ExpenseReport",
+      "to": "Payment",
+      "cardinality": "1:1"
+    },
+    {
+      "type": "PRIVATE_PAYEE",
+      "type_cn": "对私支付收款人",
+      "from": "Payment",
+      "to": "Employee",
+      "cardinality": "N:1",
+      "description": "明确独立声明，不与SUBMITTED_BY/TRAVELED_BY混用，即便实际值常等于报销人。"
+    }
+  ],
+
+  "constraints": [
+    { "label": "ExpenseReport", "property": "report_id", "type": "UNIQUE" },
+    { "label": "TripRequest", "property": "approval_no", "type": "UNIQUE" },
+    { "label": "Invoice", "property": "invoice_no", "type": "UNIQUE" },
+    { "label": "Employee", "property": "employee_id", "type": "UNIQUE" },
+    { "label": "Company", "property": "company_id", "type": "UNIQUE" }
+  ],
+
+  "known_design_risks": [
+    "Employee节点目前以姓名作为主要识别依据，样例数据未提供工号，存在同名员工冲突风险，生产环境必须补充唯一工号字段",
+    "TripRequest的审批单号目前需从'线下预订审批描述'自由文本中解析，不是结构化字段，建议要求源系统直接输出结构化的approval_no字段，而非依赖文本解析",
+    "TransportSegment的specialized_properties目前以Map形式松散挂载在节点上，Neo4j本身不强制schema，需配合应用层校验或APOC约束，否则不同交通方式字段会混乱写入",
+    "CostAllocation中'无/0%/0'占位记录是否应该物理入图，目前设计选择'入图但标记is_placeholder'，另一可选方案是'不入图，留空即代表无分摊'，两种方案对LLM查询逻辑影响不同，需要与业务方确认后固化一种"
+  ]
+}

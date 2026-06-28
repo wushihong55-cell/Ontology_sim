@@ -1,0 +1,109 @@
+{
+  "data": [
+    {
+      "id": "CITY-GZ",
+      "name": "广州",
+      "province": "广东省",
+      "country": "中国",
+      "isPopularBizDestination": true
+    },
+    {
+      "id": "CITY-WH",
+      "name": "武汉",
+      "province": "湖北省",
+      "country": "中国",
+      "isPopularBizDestination": true
+    },
+    {
+      "id": "CITY-BJ",
+      "name": "北京",
+      "province": "北京市",
+      "country": "中国",
+      "isPopularBizDestination": true
+    },
+    {
+      "id": "CITY-SH",
+      "name": "上海",
+      "province": "上海市",
+      "country": "中国",
+      "isPopularBizDestination": true
+    },
+    {
+      "id": "CITY-SZ",
+      "name": "深圳",
+      "province": "广东省",
+      "country": "中国",
+      "isPopularBizDestination": true
+    },
+    {
+      "id": "CITY-HZ",
+      "name": "杭州",
+      "province": "浙江省",
+      "country": "中国",
+      "isPopularBizDestination": true
+    },
+    {
+      "id": "CITY-CD",
+      "name": "成都",
+      "province": "四川省",
+      "country": "中国",
+      "isPopularBizDestination": true
+    },
+    {
+      "id": "CITY-CQ",
+      "name": "重庆",
+      "province": "重庆市",
+      "country": "中国",
+      "isPopularBizDestination": true
+    },
+    {
+      "id": "CITY-NJ",
+      "name": "南京",
+      "province": "江苏省",
+      "country": "中国",
+      "isPopularBizDestination": true
+    },
+    {
+      "id": "CITY-XA",
+      "name": "西安",
+      "province": "陕西省",
+      "country": "中国",
+      "isPopularBizDestination": false
+    },
+    {
+      "id": "CITY-CS",
+      "name": "长沙",
+      "province": "湖南省",
+      "country": "中国",
+      "isPopularBizDestination": false
+    },
+    {
+      "id": "CITY-XM",
+      "name": "厦门",
+      "province": "福建省",
+      "country": "中国",
+      "isPopularBizDestination": false
+    },
+    {
+      "id": "CITY-HF",
+      "name": "合肥",
+      "province": "安徽省",
+      "country": "中国",
+      "isPopularBizDestination": false
+    },
+    {
+      "id": "CITY-SU",
+      "name": "苏州",
+      "province": "江苏省",
+      "country": "中国",
+      "isPopularBizDestination": false
+    },
+    {
+      "id": "CITY-ZZ",
+      "name": "郑州",
+      "province": "河南省",
+      "country": "中国",
+      "isPopularBizDestination": false
+    }
+  ]
+}

@@ -1,0 +1,98 @@
+{
+  "workspace": "Customer Knowledge Ontology",
+  "version": "0.1.0",
+  "summary": "当前工作区包含 18 个实体和 21 条关系。",
+  "entities": [
+     {
+        "label": "Province",
+        "description": "省份/自治区/直辖市",
+        "properties": [
+          { "name": "name", "type": "String", "indexed": true, "constraint": "unique" },
+          { "name": "adcode", "type": "String", "constraint": "unique", "description": "行政区划代码" },
+          { "name": "shortName", "type": "String", "description": "简称, 如：粤" }
+        ]
+      },
+      {
+        "label": "City",
+        "description": "城市实体",
+        "properties": [
+          { "name": "name", "type": "String", "indexed": true, "constraint": "unique" },
+          { "name": "cityCode", "type": "String", "description": "电话区号或内部代码" },
+          { "name": "pinyin", "type": "String" },
+          { "name": "tier", "type": "String", "description": "城市等级：一线, 新一线, 二线..." },
+          { "name": "location", "type": "Point", "description": "地理坐标" }
+        ]
+      },
+      {
+        "label": "Airport",
+        "description": "民航机场",
+        "properties": [
+          { "name": "name", "type": "String", "indexed": true },
+          { "name": "iata", "type": "String", "constraint": "unique", "description": "三字码" },
+          { "name": "icao", "type": "String", "description": "四字码" },
+          { "name": "isInternational", "type": "Boolean" },
+          { "name": "location", "type": "Point" }
+        ]
+      },
+      {
+        "label": "RailwayStation",
+        "description": "火车站",
+        "properties": [
+          { "name": "name", "type": "String", "indexed": true },
+          { "name": "stationCode", "type": "String", "constraint": "unique", "description": "电报码" },
+          { "name": "isHighSpeed", "type": "Boolean" },
+          { "name": "location", "type": "Point" }
+        ]
+      }
+    ],
+    "relations": [
+      {
+        "type": "IN_PROVINCE",
+        "from": "City",
+        "to": "Province",
+        "properties": []
+      },
+      {
+        "type": "IN_CITY",
+        "from": "Airport",
+        "to": "City",
+        "properties": []
+      },
+      {
+        "type": "IN_CITY",
+        "from": "RailwayStation",
+        "to": "City",
+        "properties": []
+      },
+      {
+        "type": "FLIGHT_TO",
+        "from": "Airport",
+        "to": "Airport",
+        "description": "航线关系",
+        "properties": [
+          { "name": "distance", "type": "Float" },
+          { "name": "duration", "type": "Integer", "description": "平均飞行耗时(分钟)" }
+        ]
+      },
+      {
+        "type": "RAIL_TO",
+        "from": "RailwayStation",
+        "to": "RailwayStation",
+        "description": "铁路路径",
+        "properties": [
+          { "name": "distance", "type": "Float" },
+          { "name": "trainTypes", "type": "List<String>", "description": "G, D, T, Z, K" }
+        ]
+      },
+      {
+        "type": "TRANSFER_TO",
+        "from": "RailwayStation",
+        "to": "Airport",
+        "description": "同城换乘 (空铁联运)",
+        "properties": [
+          { "name": "time_mins", "type": "Integer" },
+          { "name": "transport_mode", "type": "String", "description": "subway, taxi, shuttle" }
+        ]
+      }
+    ]
+}

@@ -1,0 +1,643 @@
+{
+  "data": [
+    {
+      "id": "TT-001",
+      "trainNo": "G1440",
+      "from": "广州",
+      "to": "厦门",
+      "departureTime": "2024-10-23T18:45:00",
+      "seatType": "二等座",
+      "amount": 170
+    },
+    {
+      "id": "TT-002",
+      "trainNo": "G2934",
+      "from": "武汉",
+      "to": "杭州",
+      "departureTime": "2024-10-20T16:15:00",
+      "seatType": "二等座",
+      "amount": 616
+    },
+    {
+      "id": "TT-003",
+      "trainNo": "G4592",
+      "from": "杭州",
+      "to": "武汉",
+      "departureTime": "2024-10-24T10:45:00",
+      "seatType": "二等座",
+      "amount": 616
+    },
+    {
+      "id": "TT-004",
+      "trainNo": "G7519",
+      "from": "广州",
+      "to": "上海",
+      "departureTime": "2024-10-18T19:00:00",
+      "seatType": "商务座",
+      "amount": 629
+    },
+    {
+      "id": "TT-005",
+      "trainNo": "G2405",
+      "from": "上海",
+      "to": "广州",
+      "departureTime": "2024-10-24T14:15:00",
+      "seatType": "商务座",
+      "amount": 629
+    },
+    {
+      "id": "TT-006",
+      "trainNo": "D967",
+      "from": "广州",
+      "to": "南京",
+      "departureTime": "2024-10-23T07:00:00",
+      "seatType": "商务座",
+      "amount": 224
+    },
+    {
+      "id": "TT-007",
+      "trainNo": "D4261",
+      "from": "广州",
+      "to": "深圳",
+      "departureTime": "2024-10-02T19:45:00",
+      "seatType": "商务座",
+      "amount": 458
+    },
+    {
+      "id": "TT-008",
+      "trainNo": "D6397",
+      "from": "深圳",
+      "to": "广州",
+      "departureTime": "2024-10-06T17:30:00",
+      "seatType": "商务座",
+      "amount": 458
+    },
+    {
+      "id": "TT-009",
+      "trainNo": "G8454",
+      "from": "广州",
+      "to": "上海",
+      "departureTime": "2024-10-07T09:30:00",
+      "seatType": "二等座",
+      "amount": 239
+    },
+    {
+      "id": "TT-010",
+      "trainNo": "G2505",
+      "from": "上海",
+      "to": "广州",
+      "departureTime": "2024-10-13T08:15:00",
+      "seatType": "二等座",
+      "amount": 239
+    },
+    {
+      "id": "TT-011",
+      "trainNo": "G2904",
+      "from": "武汉",
+      "to": "南京",
+      "departureTime": "2024-10-05T13:45:00",
+      "seatType": "一等座",
+      "amount": 370
+    },
+    {
+      "id": "TT-012",
+      "trainNo": "G5816",
+      "from": "广州",
+      "to": "南京",
+      "departureTime": "2024-11-08T09:00:00",
+      "seatType": "二等座",
+      "amount": 608
+    },
+    {
+      "id": "TT-013",
+      "trainNo": "G9456",
+      "from": "南京",
+      "to": "广州",
+      "departureTime": "2024-11-09T12:45:00",
+      "seatType": "二等座",
+      "amount": 608
+    },
+    {
+      "id": "TT-014",
+      "trainNo": "G1101",
+      "from": "广州",
+      "to": "南京",
+      "departureTime": "2024-11-17T07:15:00",
+      "seatType": "商务座",
+      "amount": 258
+    },
+    {
+      "id": "TT-015",
+      "trainNo": "D9824",
+      "from": "武汉",
+      "to": "南京",
+      "departureTime": "2024-11-11T18:15:00",
+      "seatType": "二等座",
+      "amount": 162
+    },
+    {
+      "id": "TT-016",
+      "trainNo": "D1052",
+      "from": "南京",
+      "to": "武汉",
+      "departureTime": "2024-11-14T16:00:00",
+      "seatType": "二等座",
+      "amount": 162
+    },
+    {
+      "id": "TT-017",
+      "trainNo": "D7445",
+      "from": "广州",
+      "to": "上海",
+      "departureTime": "2024-11-13T13:15:00",
+      "seatType": "二等座",
+      "amount": 324
+    },
+    {
+      "id": "TT-018",
+      "trainNo": "D2550",
+      "from": "上海",
+      "to": "广州",
+      "departureTime": "2024-11-15T15:00:00",
+      "seatType": "二等座",
+      "amount": 324
+    },
+    {
+      "id": "TT-019",
+      "trainNo": "G9081",
+      "from": "武汉",
+      "to": "南京",
+      "departureTime": "2024-11-16T12:45:00",
+      "seatType": "二等座",
+      "amount": 410
+    },
+    {
+      "id": "TT-020",
+      "trainNo": "G9902",
+      "from": "南京",
+      "to": "武汉",
+      "departureTime": "2024-11-21T17:15:00",
+      "seatType": "二等座",
+      "amount": 410
+    },
+    {
+      "id": "TT-021",
+      "trainNo": "G6860",
+      "from": "武汉",
+      "to": "南京",
+      "departureTime": "2024-11-02T06:15:00",
+      "seatType": "二等座",
+      "amount": 505
+    },
+    {
+      "id": "TT-022",
+      "trainNo": "G9957",
+      "from": "南京",
+      "to": "武汉",
+      "departureTime": "2024-11-06T07:00:00",
+      "seatType": "二等座",
+      "amount": 505
+    },
+    {
+      "id": "TT-023",
+      "trainNo": "G5212",
+      "from": "广州",
+      "to": "深圳",
+      "departureTime": "2024-11-14T15:00:00",
+      "seatType": "一等座",
+      "amount": 592
+    },
+    {
+      "id": "TT-024",
+      "trainNo": "G8327",
+      "from": "深圳",
+      "to": "广州",
+      "departureTime": "2024-11-21T11:15:00",
+      "seatType": "一等座",
+      "amount": 592
+    },
+    {
+      "id": "TT-025",
+      "trainNo": "G1738",
+      "from": "广州",
+      "to": "南京",
+      "departureTime": "2024-11-12T06:30:00",
+      "seatType": "一等座",
+      "amount": 453
+    },
+    {
+      "id": "TT-026",
+      "trainNo": "D5247",
+      "from": "武汉",
+      "to": "北京",
+      "departureTime": "2024-11-19T18:15:00",
+      "seatType": "二等座",
+      "amount": 508
+    },
+    {
+      "id": "TT-027",
+      "trainNo": "G3621",
+      "from": "武汉",
+      "to": "北京",
+      "departureTime": "2024-11-19T10:00:00",
+      "seatType": "二等座",
+      "amount": 131
+    },
+    {
+      "id": "TT-028",
+      "trainNo": "G3655",
+      "from": "北京",
+      "to": "武汉",
+      "departureTime": "2024-11-22T09:30:00",
+      "seatType": "二等座",
+      "amount": 131
+    },
+    {
+      "id": "TT-029",
+      "trainNo": "G7965",
+      "from": "广州",
+      "to": "南京",
+      "departureTime": "2024-11-03T10:15:00",
+      "seatType": "二等座",
+      "amount": 423
+    },
+    {
+      "id": "TT-030",
+      "trainNo": "G9798",
+      "from": "南京",
+      "to": "广州",
+      "departureTime": "2024-11-05T10:45:00",
+      "seatType": "二等座",
+      "amount": 423
+    },
+    {
+      "id": "TT-031",
+      "trainNo": "D5145",
+      "from": "广州",
+      "to": "深圳",
+      "departureTime": "2024-12-11T19:45:00",
+      "seatType": "商务座",
+      "amount": 122
+    },
+    {
+      "id": "TT-032",
+      "trainNo": "D2382",
+      "from": "深圳",
+      "to": "广州",
+      "departureTime": "2024-12-18T13:15:00",
+      "seatType": "商务座",
+      "amount": 122
+    },
+    {
+      "id": "TT-033",
+      "trainNo": "D3598",
+      "from": "广州",
+      "to": "上海",
+      "departureTime": "2024-12-02T14:15:00",
+      "seatType": "商务座",
+      "amount": 337
+    },
+    {
+      "id": "TT-034",
+      "trainNo": "G3117",
+      "from": "广州",
+      "to": "武汉",
+      "departureTime": "2024-12-18T14:30:00",
+      "seatType": "商务座",
+      "amount": 346
+    },
+    {
+      "id": "TT-035",
+      "trainNo": "G3069",
+      "from": "武汉",
+      "to": "广州",
+      "departureTime": "2024-12-21T13:30:00",
+      "seatType": "商务座",
+      "amount": 346
+    },
+    {
+      "id": "TT-036",
+      "trainNo": "D7117",
+      "from": "广州",
+      "to": "深圳",
+      "departureTime": "2024-12-03T11:00:00",
+      "seatType": "商务座",
+      "amount": 375
+    },
+    {
+      "id": "TT-037",
+      "trainNo": "D4036",
+      "from": "深圳",
+      "to": "广州",
+      "departureTime": "2024-12-07T14:45:00",
+      "seatType": "商务座",
+      "amount": 375
+    },
+    {
+      "id": "TT-038",
+      "trainNo": "D7791",
+      "from": "广州",
+      "to": "厦门",
+      "departureTime": "2024-12-12T08:15:00",
+      "seatType": "商务座",
+      "amount": 169
+    },
+    {
+      "id": "TT-039",
+      "trainNo": "D8278",
+      "from": "厦门",
+      "to": "广州",
+      "departureTime": "2024-12-16T17:45:00",
+      "seatType": "商务座",
+      "amount": 169
+    },
+    {
+      "id": "TT-040",
+      "trainNo": "D2058",
+      "from": "武汉",
+      "to": "南京",
+      "departureTime": "2024-12-04T09:45:00",
+      "seatType": "一等座",
+      "amount": 613
+    },
+    {
+      "id": "TT-041",
+      "trainNo": "D9834",
+      "from": "南京",
+      "to": "武汉",
+      "departureTime": "2024-12-10T16:15:00",
+      "seatType": "一等座",
+      "amount": 613
+    },
+    {
+      "id": "TT-042",
+      "trainNo": "G3767",
+      "from": "广州",
+      "to": "南京",
+      "departureTime": "2024-12-23T16:15:00",
+      "seatType": "二等座",
+      "amount": 220
+    },
+    {
+      "id": "TT-043",
+      "trainNo": "G9992",
+      "from": "南京",
+      "to": "广州",
+      "departureTime": "2024-12-26T18:00:00",
+      "seatType": "二等座",
+      "amount": 220
+    },
+    {
+      "id": "TT-044",
+      "trainNo": "G4095",
+      "from": "广州",
+      "to": "厦门",
+      "departureTime": "2024-12-19T15:15:00",
+      "seatType": "商务座",
+      "amount": 527
+    },
+    {
+      "id": "TT-045",
+      "trainNo": "G3474",
+      "from": "厦门",
+      "to": "广州",
+      "departureTime": "2024-12-25T19:15:00",
+      "seatType": "商务座",
+      "amount": 527
+    },
+    {
+      "id": "TT-046",
+      "trainNo": "G2728",
+      "from": "广州",
+      "to": "杭州",
+      "departureTime": "2024-12-21T17:30:00",
+      "seatType": "一等座",
+      "amount": 428
+    },
+    {
+      "id": "TT-047",
+      "trainNo": "G8247",
+      "from": "杭州",
+      "to": "广州",
+      "departureTime": "2024-12-24T14:30:00",
+      "seatType": "一等座",
+      "amount": 428
+    },
+    {
+      "id": "TT-048",
+      "trainNo": "D4818",
+      "from": "广州",
+      "to": "深圳",
+      "departureTime": "2024-12-01T06:45:00",
+      "seatType": "二等座",
+      "amount": 249
+    },
+    {
+      "id": "TT-049",
+      "trainNo": "D5920",
+      "from": "深圳",
+      "to": "广州",
+      "departureTime": "2024-12-05T10:00:00",
+      "seatType": "二等座",
+      "amount": 249
+    },
+    {
+      "id": "TT-050",
+      "trainNo": "G5369",
+      "from": "广州",
+      "to": "深圳",
+      "departureTime": "2024-12-11T10:00:00",
+      "seatType": "商务座",
+      "amount": 617
+    },
+    {
+      "id": "TT-051",
+      "trainNo": "G2646",
+      "from": "深圳",
+      "to": "广州",
+      "departureTime": "2024-12-12T19:45:00",
+      "seatType": "商务座",
+      "amount": 617
+    },
+    {
+      "id": "TT-052",
+      "trainNo": "G7876",
+      "from": "广州",
+      "to": "南京",
+      "departureTime": "2025-01-21T08:15:00",
+      "seatType": "一等座",
+      "amount": 378
+    },
+    {
+      "id": "TT-053",
+      "trainNo": "D2083",
+      "from": "广州",
+      "to": "杭州",
+      "departureTime": "2025-01-07T16:45:00",
+      "seatType": "二等座",
+      "amount": 564
+    },
+    {
+      "id": "TT-054",
+      "trainNo": "D2647",
+      "from": "杭州",
+      "to": "广州",
+      "departureTime": "2025-01-09T10:15:00",
+      "seatType": "二等座",
+      "amount": 564
+    },
+    {
+      "id": "TT-055",
+      "trainNo": "D5794",
+      "from": "广州",
+      "to": "上海",
+      "departureTime": "2025-01-11T13:15:00",
+      "seatType": "商务座",
+      "amount": 327
+    },
+    {
+      "id": "TT-056",
+      "trainNo": "D1808",
+      "from": "上海",
+      "to": "广州",
+      "departureTime": "2025-01-13T20:30:00",
+      "seatType": "商务座",
+      "amount": 327
+    },
+    {
+      "id": "TT-057",
+      "trainNo": "D3143",
+      "from": "广州",
+      "to": "南京",
+      "departureTime": "2025-01-02T12:00:00",
+      "seatType": "商务座",
+      "amount": 216
+    },
+    {
+      "id": "TT-058",
+      "trainNo": "D9942",
+      "from": "南京",
+      "to": "广州",
+      "departureTime": "2025-01-06T17:15:00",
+      "seatType": "商务座",
+      "amount": 216
+    },
+    {
+      "id": "TT-059",
+      "trainNo": "D5556",
+      "from": "广州",
+      "to": "南京",
+      "departureTime": "2025-01-18T15:15:00",
+      "seatType": "商务座",
+      "amount": 622
+    },
+    {
+      "id": "TT-060",
+      "trainNo": "D9897",
+      "from": "南京",
+      "to": "广州",
+      "departureTime": "2025-01-24T14:00:00",
+      "seatType": "商务座",
+      "amount": 622
+    },
+    {
+      "id": "TT-061",
+      "trainNo": "D7500",
+      "from": "广州",
+      "to": "武汉",
+      "departureTime": "2025-01-13T06:00:00",
+      "seatType": "二等座",
+      "amount": 315
+    },
+    {
+      "id": "TT-062",
+      "trainNo": "D5316",
+      "from": "武汉",
+      "to": "广州",
+      "departureTime": "2025-01-20T19:15:00",
+      "seatType": "二等座",
+      "amount": 315
+    },
+    {
+      "id": "TT-063",
+      "trainNo": "G7279",
+      "from": "武汉",
+      "to": "杭州",
+      "departureTime": "2025-02-14T07:30:00",
+      "seatType": "一等座",
+      "amount": 547
+    },
+    {
+      "id": "TT-064",
+      "trainNo": "D1104",
+      "from": "武汉",
+      "to": "南京",
+      "departureTime": "2025-02-10T08:30:00",
+      "seatType": "二等座",
+      "amount": 254
+    },
+    {
+      "id": "TT-065",
+      "trainNo": "G2159",
+      "from": "广州",
+      "to": "上海",
+      "departureTime": "2025-02-21T19:30:00",
+      "seatType": "一等座",
+      "amount": 150
+    },
+    {
+      "id": "TT-066",
+      "trainNo": "G1685",
+      "from": "广州",
+      "to": "厦门",
+      "departureTime": "2025-02-23T08:30:00",
+      "seatType": "二等座",
+      "amount": 309
+    },
+    {
+      "id": "TT-067",
+      "trainNo": "D3915",
+      "from": "武汉",
+      "to": "南京",
+      "departureTime": "2025-03-03T07:00:00",
+      "seatType": "二等座",
+      "amount": 466
+    },
+    {
+      "id": "TT-068",
+      "trainNo": "D9129",
+      "from": "武汉",
+      "to": "南京",
+      "departureTime": "2025-03-09T15:30:00",
+      "seatType": "二等座",
+      "amount": 148
+    },
+    {
+      "id": "TT-069",
+      "trainNo": "G6690",
+      "from": "广州",
+      "to": "深圳",
+      "departureTime": "2025-03-15T08:30:00",
+      "seatType": "二等座",
+      "amount": 451
+    },
+    {
+      "id": "TT-070",
+      "trainNo": "G6193",
+      "from": "深圳",
+      "to": "广州",
+      "departureTime": "2025-03-19T20:45:00",
+      "seatType": "二等座",
+      "amount": 451
+    },
+    {
+      "id": "TT-071",
+      "trainNo": "D8518",
+      "from": "广州",
+      "to": "深圳",
+      "departureTime": "2025-03-21T08:00:00",
+      "seatType": "二等座",
+      "amount": 343
+    }
+  ]
+}

@@ -1,0 +1,32 @@
+{
+  "data": [
+    {
+      "id": "D001",
+      "name": "AdminDept",
+      "nameZh": "行政管理部",
+      "headcount": 8,
+      "budgetCenter": "CC-ADMIN-001"
+    },
+    {
+      "id": "D002",
+      "name": "RDDept1",
+      "nameZh": "研发一部",
+      "headcount": 35,
+      "budgetCenter": "CC-RD1-001"
+    },
+    {
+      "id": "D003",
+      "name": "RDDept2",
+      "nameZh": "研发二部",
+      "headcount": 32,
+      "budgetCenter": "CC-RD2-001"
+    },
+    {
+      "id": "D004",
+      "name": "DeliveryCenter",
+      "nameZh": "交付中心",
+      "headcount": 35,
+      "budgetCenter": "CC-DC-001"
+    }
+  ]
+}

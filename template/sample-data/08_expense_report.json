@@ -1,0 +1,1360 @@
+{
+  "data": [
+    {
+      "id": "ER-202410-001",
+      "reportNo": "ER-202410-001",
+      "submittedDate": "2024-10-15",
+      "totalAmount": 5990,
+      "status": "草稿"
+    },
+    {
+      "id": "ER-202410-002",
+      "reportNo": "ER-202410-002",
+      "submittedDate": "2024-10-18",
+      "totalAmount": 5720,
+      "status": "草稿"
+    },
+    {
+      "id": "ER-202410-003",
+      "reportNo": "ER-202410-003",
+      "submittedDate": "2024-11-01",
+      "totalAmount": 5130,
+      "status": "已付款",
+      "approvedAmount": 5130
+    },
+    {
+      "id": "ER-202410-004",
+      "reportNo": "ER-202410-004",
+      "submittedDate": "2024-10-12",
+      "totalAmount": 2570,
+      "status": "审批中"
+    },
+    {
+      "id": "ER-202410-005",
+      "reportNo": "ER-202410-005",
+      "submittedDate": "2024-10-16",
+      "totalAmount": 7120,
+      "status": "已付款",
+      "approvedAmount": 7120
+    },
+    {
+      "id": "ER-202410-006",
+      "reportNo": "ER-202410-006",
+      "submittedDate": "2024-11-03",
+      "totalAmount": 2680,
+      "status": "草稿"
+    },
+    {
+      "id": "ER-202410-007",
+      "reportNo": "ER-202410-007",
+      "submittedDate": "2024-10-27",
+      "totalAmount": 3110,
+      "status": "审批中"
+    },
+    {
+      "id": "ER-202410-008",
+      "reportNo": "ER-202410-008",
+      "submittedDate": "2024-10-29",
+      "totalAmount": 2390,
+      "status": "已付款",
+      "approvedAmount": 2390
+    },
+    {
+      "id": "ER-202410-009",
+      "reportNo": "ER-202410-009",
+      "submittedDate": "2024-10-18",
+      "totalAmount": 5200,
+      "status": "已付款",
+      "approvedAmount": 5200
+    },
+    {
+      "id": "ER-202410-010",
+      "reportNo": "ER-202410-010",
+      "submittedDate": "2024-10-20",
+      "totalAmount": 4130,
+      "status": "已付款",
+      "approvedAmount": 4130
+    },
+    {
+      "id": "ER-202410-011",
+      "reportNo": "ER-202410-011",
+      "submittedDate": "2024-10-28",
+      "totalAmount": 8620,
+      "status": "已付款",
+      "approvedAmount": 8620
+    },
+    {
+      "id": "ER-202410-012",
+      "reportNo": "ER-202410-012",
+      "submittedDate": "2024-11-02",
+      "totalAmount": 3210,
+      "status": "已批准",
+      "approvedAmount": 3210
+    },
+    {
+      "id": "ER-202410-013",
+      "reportNo": "ER-202410-013",
+      "submittedDate": "2024-10-14",
+      "totalAmount": 6430,
+      "status": "审批中"
+    },
+    {
+      "id": "ER-202410-014",
+      "reportNo": "ER-202410-014",
+      "submittedDate": "2024-10-30",
+      "totalAmount": 6530,
+      "status": "已付款",
+      "approvedAmount": 6530
+    },
+    {
+      "id": "ER-202410-015",
+      "reportNo": "ER-202410-015",
+      "submittedDate": "2024-10-23",
+      "totalAmount": 6150,
+      "status": "已付款",
+      "approvedAmount": 6150
+    },
+    {
+      "id": "ER-202410-016",
+      "reportNo": "ER-202410-016",
+      "submittedDate": "2024-10-12",
+      "totalAmount": 5750,
+      "status": "已付款",
+      "approvedAmount": 5750
+    },
+    {
+      "id": "ER-202410-017",
+      "reportNo": "ER-202410-017",
+      "submittedDate": "2024-10-22",
+      "totalAmount": 6140,
+      "status": "已付款",
+      "approvedAmount": 6140
+    },
+    {
+      "id": "ER-202410-018",
+      "reportNo": "ER-202410-018",
+      "submittedDate": "2024-10-23",
+      "totalAmount": 6490,
+      "status": "草稿"
+    },
+    {
+      "id": "ER-202410-019",
+      "reportNo": "ER-202410-019",
+      "submittedDate": "2024-10-10",
+      "totalAmount": 3210,
+      "status": "已付款",
+      "approvedAmount": 3210
+    },
+    {
+      "id": "ER-202410-020",
+      "reportNo": "ER-202410-020",
+      "submittedDate": "2024-10-27",
+      "totalAmount": 5160,
+      "status": "草稿"
+    },
+    {
+      "id": "ER-202410-021",
+      "reportNo": "ER-202410-021",
+      "submittedDate": "2024-11-02",
+      "totalAmount": 4340,
+      "status": "已付款",
+      "approvedAmount": 4340
+    },
+    {
+      "id": "ER-202410-022",
+      "reportNo": "ER-202410-022",
+      "submittedDate": "2024-10-08",
+      "totalAmount": 3280,
+      "status": "已付款",
+      "approvedAmount": 3280
+    },
+    {
+      "id": "ER-202410-023",
+      "reportNo": "ER-202410-023",
+      "submittedDate": "2024-10-11",
+      "totalAmount": 3780,
+      "status": "已付款",
+      "approvedAmount": 3780
+    },
+    {
+      "id": "ER-202410-024",
+      "reportNo": "ER-202410-024",
+      "submittedDate": "2024-10-14",
+      "totalAmount": 3640,
+      "status": "已付款",
+      "approvedAmount": 3640
+    },
+    {
+      "id": "ER-202410-025",
+      "reportNo": "ER-202410-025",
+      "submittedDate": "2024-10-27",
+      "totalAmount": 6420,
+      "status": "草稿"
+    },
+    {
+      "id": "ER-202410-026",
+      "reportNo": "ER-202410-026",
+      "submittedDate": "2024-10-31",
+      "totalAmount": 6150,
+      "status": "已批准",
+      "approvedAmount": 6150
+    },
+    {
+      "id": "ER-202410-027",
+      "reportNo": "ER-202410-027",
+      "submittedDate": "2024-10-11",
+      "totalAmount": 3640,
+      "status": "已批准",
+      "approvedAmount": 3640
+    },
+    {
+      "id": "ER-202410-028",
+      "reportNo": "ER-202410-028",
+      "submittedDate": "2024-10-12",
+      "totalAmount": 3700,
+      "status": "已付款",
+      "approvedAmount": 3700
+    },
+    {
+      "id": "ER-202411-029",
+      "reportNo": "ER-202411-029",
+      "submittedDate": "2024-11-24",
+      "totalAmount": 10290,
+      "status": "已付款",
+      "approvedAmount": 10290
+    },
+    {
+      "id": "ER-202411-030",
+      "reportNo": "ER-202411-030",
+      "submittedDate": "2024-11-15",
+      "totalAmount": 1570,
+      "status": "已付款",
+      "approvedAmount": 1570
+    },
+    {
+      "id": "ER-202411-031",
+      "reportNo": "ER-202411-031",
+      "submittedDate": "2024-11-23",
+      "totalAmount": 4580,
+      "status": "已付款",
+      "approvedAmount": 4580
+    },
+    {
+      "id": "ER-202411-032",
+      "reportNo": "ER-202411-032",
+      "submittedDate": "2024-11-16",
+      "totalAmount": 5790,
+      "status": "已批准",
+      "approvedAmount": 5790
+    },
+    {
+      "id": "ER-202411-033",
+      "reportNo": "ER-202411-033",
+      "submittedDate": "2024-11-11",
+      "totalAmount": 5620,
+      "status": "审批中"
+    },
+    {
+      "id": "ER-202411-034",
+      "reportNo": "ER-202411-034",
+      "submittedDate": "2024-11-20",
+      "totalAmount": 3560,
+      "status": "已付款",
+      "approvedAmount": 3560
+    },
+    {
+      "id": "ER-202411-035",
+      "reportNo": "ER-202411-035",
+      "submittedDate": "2024-12-01",
+      "totalAmount": 8420,
+      "status": "已批准",
+      "approvedAmount": 8420
+    },
+    {
+      "id": "ER-202411-036",
+      "reportNo": "ER-202411-036",
+      "submittedDate": "2024-11-25",
+      "totalAmount": 5960,
+      "status": "已批准",
+      "approvedAmount": 5960
+    },
+    {
+      "id": "ER-202411-037",
+      "reportNo": "ER-202411-037",
+      "submittedDate": "2024-11-20",
+      "totalAmount": 3600,
+      "status": "已付款",
+      "approvedAmount": 3600
+    },
+    {
+      "id": "ER-202411-038",
+      "reportNo": "ER-202411-038",
+      "submittedDate": "2024-11-17",
+      "totalAmount": 8010,
+      "status": "已付款",
+      "approvedAmount": 8010
+    },
+    {
+      "id": "ER-202411-039",
+      "reportNo": "ER-202411-039",
+      "submittedDate": "2024-11-27",
+      "totalAmount": 5780,
+      "status": "已批准",
+      "approvedAmount": 5780
+    },
+    {
+      "id": "ER-202411-040",
+      "reportNo": "ER-202411-040",
+      "submittedDate": "2024-11-12",
+      "totalAmount": 3010,
+      "status": "已付款",
+      "approvedAmount": 3010
+    },
+    {
+      "id": "ER-202411-041",
+      "reportNo": "ER-202411-041",
+      "submittedDate": "2024-12-02",
+      "totalAmount": 6110,
+      "status": "审批中"
+    },
+    {
+      "id": "ER-202411-042",
+      "reportNo": "ER-202411-042",
+      "submittedDate": "2024-11-18",
+      "totalAmount": 1380,
+      "status": "已付款",
+      "approvedAmount": 1380
+    },
+    {
+      "id": "ER-202411-043",
+      "reportNo": "ER-202411-043",
+      "submittedDate": "2024-11-17",
+      "totalAmount": 7590,
+      "status": "已付款",
+      "approvedAmount": 7590
+    },
+    {
+      "id": "ER-202411-044",
+      "reportNo": "ER-202411-044",
+      "submittedDate": "2024-11-18",
+      "totalAmount": 1180,
+      "status": "已付款",
+      "approvedAmount": 1180
+    },
+    {
+      "id": "ER-202411-045",
+      "reportNo": "ER-202411-045",
+      "submittedDate": "2024-11-08",
+      "totalAmount": 4900,
+      "status": "已付款",
+      "approvedAmount": 4900
+    },
+    {
+      "id": "ER-202411-046",
+      "reportNo": "ER-202411-046",
+      "submittedDate": "2024-11-23",
+      "totalAmount": 2730,
+      "status": "已付款",
+      "approvedAmount": 2730
+    },
+    {
+      "id": "ER-202411-047",
+      "reportNo": "ER-202411-047",
+      "submittedDate": "2024-12-01",
+      "totalAmount": 5250,
+      "status": "已付款",
+      "approvedAmount": 5250
+    },
+    {
+      "id": "ER-202411-048",
+      "reportNo": "ER-202411-048",
+      "submittedDate": "2024-11-13",
+      "totalAmount": 2250,
+      "status": "已付款",
+      "approvedAmount": 2250
+    },
+    {
+      "id": "ER-202411-049",
+      "reportNo": "ER-202411-049",
+      "submittedDate": "2024-11-28",
+      "totalAmount": 5420,
+      "status": "已付款",
+      "approvedAmount": 5420
+    },
+    {
+      "id": "ER-202411-050",
+      "reportNo": "ER-202411-050",
+      "submittedDate": "2024-11-22",
+      "totalAmount": 4010,
+      "status": "已批准",
+      "approvedAmount": 4010
+    },
+    {
+      "id": "ER-202411-051",
+      "reportNo": "ER-202411-051",
+      "submittedDate": "2024-11-26",
+      "totalAmount": 2160,
+      "status": "已批准",
+      "approvedAmount": 2160
+    },
+    {
+      "id": "ER-202411-052",
+      "reportNo": "ER-202411-052",
+      "submittedDate": "2024-11-29",
+      "totalAmount": 1720,
+      "status": "已付款",
+      "approvedAmount": 1720
+    },
+    {
+      "id": "ER-202411-053",
+      "reportNo": "ER-202411-053",
+      "submittedDate": "2024-11-11",
+      "totalAmount": 3850,
+      "status": "已付款",
+      "approvedAmount": 3850
+    },
+    {
+      "id": "ER-202411-054",
+      "reportNo": "ER-202411-054",
+      "submittedDate": "2024-11-26",
+      "totalAmount": 5940,
+      "status": "已付款",
+      "approvedAmount": 5940
+    },
+    {
+      "id": "ER-202411-055",
+      "reportNo": "ER-202411-055",
+      "submittedDate": "2024-12-03",
+      "totalAmount": 3910,
+      "status": "草稿"
+    },
+    {
+      "id": "ER-202411-056",
+      "reportNo": "ER-202411-056",
+      "submittedDate": "2024-11-07",
+      "totalAmount": 1530,
+      "status": "已付款",
+      "approvedAmount": 1530
+    },
+    {
+      "id": "ER-202412-057",
+      "reportNo": "ER-202412-057",
+      "submittedDate": "2024-12-21",
+      "totalAmount": 5880,
+      "status": "已付款",
+      "approvedAmount": 5880
+    },
+    {
+      "id": "ER-202412-058",
+      "reportNo": "ER-202412-058",
+      "submittedDate": "2024-12-09",
+      "totalAmount": 4850,
+      "status": "审批中"
+    },
+    {
+      "id": "ER-202412-059",
+      "reportNo": "ER-202412-059",
+      "submittedDate": "2024-12-25",
+      "totalAmount": 2190,
+      "status": "已付款",
+      "approvedAmount": 2190
+    },
+    {
+      "id": "ER-202412-060",
+      "reportNo": "ER-202412-060",
+      "submittedDate": "2024-12-14",
+      "totalAmount": 4090,
+      "status": "已付款",
+      "approvedAmount": 4090
+    },
+    {
+      "id": "ER-202412-061",
+      "reportNo": "ER-202412-061",
+      "submittedDate": "2024-12-27",
+      "totalAmount": 4940,
+      "status": "已付款",
+      "approvedAmount": 4940
+    },
+    {
+      "id": "ER-202412-062",
+      "reportNo": "ER-202412-062",
+      "submittedDate": "2024-12-26",
+      "totalAmount": 3120,
+      "status": "已付款",
+      "approvedAmount": 3120
+    },
+    {
+      "id": "ER-202412-063",
+      "reportNo": "ER-202412-063",
+      "submittedDate": "2024-12-18",
+      "totalAmount": 4090,
+      "status": "已付款",
+      "approvedAmount": 4090
+    },
+    {
+      "id": "ER-202412-064",
+      "reportNo": "ER-202412-064",
+      "submittedDate": "2025-01-02",
+      "totalAmount": 5180,
+      "status": "已付款",
+      "approvedAmount": 5180
+    },
+    {
+      "id": "ER-202412-065",
+      "reportNo": "ER-202412-065",
+      "submittedDate": "2024-12-14",
+      "totalAmount": 4580,
+      "status": "已付款",
+      "approvedAmount": 4580
+    },
+    {
+      "id": "ER-202412-066",
+      "reportNo": "ER-202412-066",
+      "submittedDate": "2024-12-21",
+      "totalAmount": 12860,
+      "status": "已付款",
+      "approvedAmount": 12860
+    },
+    {
+      "id": "ER-202412-067",
+      "reportNo": "ER-202412-067",
+      "submittedDate": "2025-01-01",
+      "totalAmount": 6970,
+      "status": "草稿"
+    },
+    {
+      "id": "ER-202412-068",
+      "reportNo": "ER-202412-068",
+      "submittedDate": "2024-12-25",
+      "totalAmount": 4140,
+      "status": "审批中"
+    },
+    {
+      "id": "ER-202412-069",
+      "reportNo": "ER-202412-069",
+      "submittedDate": "2024-12-12",
+      "totalAmount": 3720,
+      "status": "已付款",
+      "approvedAmount": 3720
+    },
+    {
+      "id": "ER-202412-070",
+      "reportNo": "ER-202412-070",
+      "submittedDate": "2024-12-21",
+      "totalAmount": 5000,
+      "status": "草稿"
+    },
+    {
+      "id": "ER-202412-071",
+      "reportNo": "ER-202412-071",
+      "submittedDate": "2024-12-20",
+      "totalAmount": 3110,
+      "status": "已付款",
+      "approvedAmount": 3110
+    },
+    {
+      "id": "ER-202412-072",
+      "reportNo": "ER-202412-072",
+      "submittedDate": "2024-12-29",
+      "totalAmount": 1430,
+      "status": "已付款",
+      "approvedAmount": 1430
+    },
+    {
+      "id": "ER-202412-073",
+      "reportNo": "ER-202412-073",
+      "submittedDate": "2025-01-02",
+      "totalAmount": 6360,
+      "status": "已付款",
+      "approvedAmount": 6360
+    },
+    {
+      "id": "ER-202412-074",
+      "reportNo": "ER-202412-074",
+      "submittedDate": "2024-12-09",
+      "totalAmount": 4760,
+      "status": "已付款",
+      "approvedAmount": 4760
+    },
+    {
+      "id": "ER-202412-075",
+      "reportNo": "ER-202412-075",
+      "submittedDate": "2024-12-26",
+      "totalAmount": 5740,
+      "status": "已付款",
+      "approvedAmount": 5740
+    },
+    {
+      "id": "ER-202412-076",
+      "reportNo": "ER-202412-076",
+      "submittedDate": "2024-12-21",
+      "totalAmount": 6340,
+      "status": "已批准",
+      "approvedAmount": 6340
+    },
+    {
+      "id": "ER-202412-077",
+      "reportNo": "ER-202412-077",
+      "submittedDate": "2024-12-25",
+      "totalAmount": 1860,
+      "status": "已付款",
+      "approvedAmount": 1860
+    },
+    {
+      "id": "ER-202412-078",
+      "reportNo": "ER-202412-078",
+      "submittedDate": "2024-12-06",
+      "totalAmount": 5260,
+      "status": "已付款",
+      "approvedAmount": 5260
+    },
+    {
+      "id": "ER-202412-079",
+      "reportNo": "ER-202412-079",
+      "submittedDate": "2024-12-20",
+      "totalAmount": 3420,
+      "status": "已付款",
+      "approvedAmount": 3420
+    },
+    {
+      "id": "ER-202412-080",
+      "reportNo": "ER-202412-080",
+      "submittedDate": "2024-12-26",
+      "totalAmount": 5730,
+      "status": "已付款",
+      "approvedAmount": 5730
+    },
+    {
+      "id": "ER-202412-081",
+      "reportNo": "ER-202412-081",
+      "submittedDate": "2024-12-27",
+      "totalAmount": 8780,
+      "status": "审批中"
+    },
+    {
+      "id": "ER-202412-082",
+      "reportNo": "ER-202412-082",
+      "submittedDate": "2024-12-23",
+      "totalAmount": 7330,
+      "status": "已付款",
+      "approvedAmount": 7330
+    },
+    {
+      "id": "ER-202412-083",
+      "reportNo": "ER-202412-083",
+      "submittedDate": "2024-12-29",
+      "totalAmount": 4890,
+      "status": "草稿"
+    },
+    {
+      "id": "ER-202412-084",
+      "reportNo": "ER-202412-084",
+      "submittedDate": "2024-12-25",
+      "totalAmount": 4800,
+      "status": "草稿"
+    },
+    {
+      "id": "ER-202412-085",
+      "reportNo": "ER-202412-085",
+      "submittedDate": "2024-12-07",
+      "totalAmount": 1140,
+      "status": "草稿"
+    },
+    {
+      "id": "ER-202412-086",
+      "reportNo": "ER-202412-086",
+      "submittedDate": "2024-12-12",
+      "totalAmount": 2180,
+      "status": "已付款",
+      "approvedAmount": 2180
+    },
+    {
+      "id": "ER-202412-087",
+      "reportNo": "ER-202412-087",
+      "submittedDate": "2024-12-19",
+      "totalAmount": 1150,
+      "status": "已付款",
+      "approvedAmount": 1150
+    },
+    {
+      "id": "ER-202412-088",
+      "reportNo": "ER-202412-088",
+      "submittedDate": "2024-12-09",
+      "totalAmount": 3600,
+      "status": "已付款",
+      "approvedAmount": 3600
+    },
+    {
+      "id": "ER-202501-089",
+      "reportNo": "ER-202501-089",
+      "submittedDate": "2025-01-27",
+      "totalAmount": 2780,
+      "status": "已批准",
+      "approvedAmount": 2780
+    },
+    {
+      "id": "ER-202501-090",
+      "reportNo": "ER-202501-090",
+      "submittedDate": "2025-01-29",
+      "totalAmount": 5800,
+      "status": "已批准",
+      "approvedAmount": 5800
+    },
+    {
+      "id": "ER-202501-091",
+      "reportNo": "ER-202501-091",
+      "submittedDate": "2025-01-11",
+      "totalAmount": 970,
+      "status": "已付款",
+      "approvedAmount": 970
+    },
+    {
+      "id": "ER-202501-092",
+      "reportNo": "ER-202501-092",
+      "submittedDate": "2025-01-27",
+      "totalAmount": 4960,
+      "status": "已批准",
+      "approvedAmount": 4960
+    },
+    {
+      "id": "ER-202501-093",
+      "reportNo": "ER-202501-093",
+      "submittedDate": "2025-01-28",
+      "totalAmount": 18070,
+      "status": "已拒绝"
+    },
+    {
+      "id": "ER-202501-094",
+      "reportNo": "ER-202501-094",
+      "submittedDate": "2025-01-24",
+      "totalAmount": 4350,
+      "status": "已批准",
+      "approvedAmount": 4350
+    },
+    {
+      "id": "ER-202501-095",
+      "reportNo": "ER-202501-095",
+      "submittedDate": "2025-01-14",
+      "totalAmount": 7830,
+      "status": "已批准",
+      "approvedAmount": 7830
+    },
+    {
+      "id": "ER-202501-096",
+      "reportNo": "ER-202501-096",
+      "submittedDate": "2025-01-31",
+      "totalAmount": 4450,
+      "status": "已批准",
+      "approvedAmount": 4450
+    },
+    {
+      "id": "ER-202501-097",
+      "reportNo": "ER-202501-097",
+      "submittedDate": "2025-01-18",
+      "totalAmount": 1960,
+      "status": "已付款",
+      "approvedAmount": 1960
+    },
+    {
+      "id": "ER-202501-098",
+      "reportNo": "ER-202501-098",
+      "submittedDate": "2025-01-08",
+      "totalAmount": 3630,
+      "status": "已付款",
+      "approvedAmount": 3630
+    },
+    {
+      "id": "ER-202501-099",
+      "reportNo": "ER-202501-099",
+      "submittedDate": "2025-01-16",
+      "totalAmount": 5710,
+      "status": "已付款",
+      "approvedAmount": 5710
+    },
+    {
+      "id": "ER-202501-100",
+      "reportNo": "ER-202501-100",
+      "submittedDate": "2025-01-12",
+      "totalAmount": 3850,
+      "status": "已批准",
+      "approvedAmount": 3850
+    },
+    {
+      "id": "ER-202501-101",
+      "reportNo": "ER-202501-101",
+      "submittedDate": "2025-01-19",
+      "totalAmount": 5150,
+      "status": "已付款",
+      "approvedAmount": 5150
+    },
+    {
+      "id": "ER-202501-102",
+      "reportNo": "ER-202501-102",
+      "submittedDate": "2025-01-08",
+      "totalAmount": 3560,
+      "status": "已拒绝"
+    },
+    {
+      "id": "ER-202501-103",
+      "reportNo": "ER-202501-103",
+      "submittedDate": "2025-01-08",
+      "totalAmount": 3350,
+      "status": "已付款",
+      "approvedAmount": 3350
+    },
+    {
+      "id": "ER-202501-104",
+      "reportNo": "ER-202501-104",
+      "submittedDate": "2025-01-25",
+      "totalAmount": 4150,
+      "status": "已拒绝"
+    },
+    {
+      "id": "ER-202501-105",
+      "reportNo": "ER-202501-105",
+      "submittedDate": "2025-01-29",
+      "totalAmount": 5730,
+      "status": "已批准",
+      "approvedAmount": 5730
+    },
+    {
+      "id": "ER-202501-106",
+      "reportNo": "ER-202501-106",
+      "submittedDate": "2025-01-28",
+      "totalAmount": 5300,
+      "status": "已付款",
+      "approvedAmount": 5300
+    },
+    {
+      "id": "ER-202501-107",
+      "reportNo": "ER-202501-107",
+      "submittedDate": "2025-01-22",
+      "totalAmount": 3280,
+      "status": "已付款",
+      "approvedAmount": 3280
+    },
+    {
+      "id": "ER-202501-108",
+      "reportNo": "ER-202501-108",
+      "submittedDate": "2025-01-20",
+      "totalAmount": 6300,
+      "status": "已付款",
+      "approvedAmount": 6300
+    },
+    {
+      "id": "ER-202501-109",
+      "reportNo": "ER-202501-109",
+      "submittedDate": "2025-01-28",
+      "totalAmount": 4190,
+      "status": "已拒绝"
+    },
+    {
+      "id": "ER-202501-110",
+      "reportNo": "ER-202501-110",
+      "submittedDate": "2025-02-02",
+      "totalAmount": 4810,
+      "status": "已付款",
+      "approvedAmount": 4810
+    },
+    {
+      "id": "ER-202501-111",
+      "reportNo": "ER-202501-111",
+      "submittedDate": "2025-01-10",
+      "totalAmount": 4200,
+      "status": "已拒绝"
+    },
+    {
+      "id": "ER-202501-112",
+      "reportNo": "ER-202501-112",
+      "submittedDate": "2025-01-17",
+      "totalAmount": 4300,
+      "status": "草稿"
+    },
+    {
+      "id": "ER-202501-113",
+      "reportNo": "ER-202501-113",
+      "submittedDate": "2025-01-10",
+      "totalAmount": 4960,
+      "status": "已付款",
+      "approvedAmount": 4960
+    },
+    {
+      "id": "ER-202501-114",
+      "reportNo": "ER-202501-114",
+      "submittedDate": "2025-01-25",
+      "totalAmount": 6000,
+      "status": "已付款",
+      "approvedAmount": 6000
+    },
+    {
+      "id": "ER-202501-115",
+      "reportNo": "ER-202501-115",
+      "submittedDate": "2025-01-31",
+      "totalAmount": 3960,
+      "status": "已拒绝"
+    },
+    {
+      "id": "ER-202501-116",
+      "reportNo": "ER-202501-116",
+      "submittedDate": "2025-01-29",
+      "totalAmount": 5960,
+      "status": "已拒绝"
+    },
+    {
+      "id": "ER-202501-117",
+      "reportNo": "ER-202501-117",
+      "submittedDate": "2025-01-27",
+      "totalAmount": 2890,
+      "status": "已付款",
+      "approvedAmount": 2890
+    },
+    {
+      "id": "ER-202501-118",
+      "reportNo": "ER-202501-118",
+      "submittedDate": "2025-01-22",
+      "totalAmount": 6530,
+      "status": "审批中"
+    },
+    {
+      "id": "ER-202502-119",
+      "reportNo": "ER-202502-119",
+      "submittedDate": "2025-02-22",
+      "totalAmount": 1490,
+      "status": "已拒绝"
+    },
+    {
+      "id": "ER-202502-120",
+      "reportNo": "ER-202502-120",
+      "submittedDate": "2025-03-02",
+      "totalAmount": 4570,
+      "status": "已批准",
+      "approvedAmount": 4570
+    },
+    {
+      "id": "ER-202502-121",
+      "reportNo": "ER-202502-121",
+      "submittedDate": "2025-02-10",
+      "totalAmount": 3730,
+      "status": "已拒绝"
+    },
+    {
+      "id": "ER-202502-122",
+      "reportNo": "ER-202502-122",
+      "submittedDate": "2025-02-10",
+      "totalAmount": 5930,
+      "status": "已拒绝"
+    },
+    {
+      "id": "ER-202502-123",
+      "reportNo": "ER-202502-123",
+      "submittedDate": "2025-02-27",
+      "totalAmount": 7000,
+      "status": "已付款",
+      "approvedAmount": 7000
+    },
+    {
+      "id": "ER-202502-124",
+      "reportNo": "ER-202502-124",
+      "submittedDate": "2025-02-12",
+      "totalAmount": 590,
+      "status": "已拒绝"
+    },
+    {
+      "id": "ER-202502-125",
+      "reportNo": "ER-202502-125",
+      "submittedDate": "2025-02-18",
+      "totalAmount": 2070,
+      "status": "审批中"
+    },
+    {
+      "id": "ER-202502-126",
+      "reportNo": "ER-202502-126",
+      "submittedDate": "2025-02-21",
+      "totalAmount": 4130,
+      "status": "已拒绝"
+    },
+    {
+      "id": "ER-202502-127",
+      "reportNo": "ER-202502-127",
+      "submittedDate": "2025-02-22",
+      "totalAmount": 2190,
+      "status": "草稿"
+    },
+    {
+      "id": "ER-202502-128",
+      "reportNo": "ER-202502-128",
+      "submittedDate": "2025-03-01",
+      "totalAmount": 5910,
+      "status": "已拒绝"
+    },
+    {
+      "id": "ER-202502-129",
+      "reportNo": "ER-202502-129",
+      "submittedDate": "2025-02-06",
+      "totalAmount": 11710,
+      "status": "已拒绝"
+    },
+    {
+      "id": "ER-202502-130",
+      "reportNo": "ER-202502-130",
+      "submittedDate": "2025-03-03",
+      "totalAmount": 5260,
+      "status": "已拒绝"
+    },
+    {
+      "id": "ER-202502-131",
+      "reportNo": "ER-202502-131",
+      "submittedDate": "2025-02-23",
+      "totalAmount": 6400,
+      "status": "已付款",
+      "approvedAmount": 6400
+    },
+    {
+      "id": "ER-202502-132",
+      "reportNo": "ER-202502-132",
+      "submittedDate": "2025-02-14",
+      "totalAmount": 7650,
+      "status": "已付款",
+      "approvedAmount": 7650
+    },
+    {
+      "id": "ER-202502-133",
+      "reportNo": "ER-202502-133",
+      "submittedDate": "2025-02-10",
+      "totalAmount": 5460,
+      "status": "已拒绝"
+    },
+    {
+      "id": "ER-202502-134",
+      "reportNo": "ER-202502-134",
+      "submittedDate": "2025-02-21",
+      "totalAmount": 2820,
+      "status": "已拒绝"
+    },
+    {
+      "id": "ER-202502-135",
+      "reportNo": "ER-202502-135",
+      "submittedDate": "2025-02-13",
+      "totalAmount": 3660,
+      "status": "已拒绝"
+    },
+    {
+      "id": "ER-202502-136",
+      "reportNo": "ER-202502-136",
+      "submittedDate": "2025-02-18",
+      "totalAmount": 7650,
+      "status": "审批中"
+    },
+    {
+      "id": "ER-202502-137",
+      "reportNo": "ER-202502-137",
+      "submittedDate": "2025-02-14",
+      "totalAmount": 3460,
+      "status": "已付款",
+      "approvedAmount": 3460
+    },
+    {
+      "id": "ER-202502-138",
+      "reportNo": "ER-202502-138",
+      "submittedDate": "2025-02-28",
+      "totalAmount": 13710,
+      "status": "已拒绝"
+    },
+    {
+      "id": "ER-202502-139",
+      "reportNo": "ER-202502-139",
+      "submittedDate": "2025-02-18",
+      "totalAmount": 2420,
+      "status": "已批准",
+      "approvedAmount": 2420
+    },
+    {
+      "id": "ER-202502-140",
+      "reportNo": "ER-202502-140",
+      "submittedDate": "2025-02-14",
+      "totalAmount": 1300,
+      "status": "已拒绝"
+    },
+    {
+      "id": "ER-202502-141",
+      "reportNo": "ER-202502-141",
+      "submittedDate": "2025-03-02",
+      "totalAmount": 2430,
+      "status": "已批准",
+      "approvedAmount": 2430
+    },
+    {
+      "id": "ER-202502-142",
+      "reportNo": "ER-202502-142",
+      "submittedDate": "2025-02-28",
+      "totalAmount": 4500,
+      "status": "已批准",
+      "approvedAmount": 4500
+    },
+    {
+      "id": "ER-202502-143",
+      "reportNo": "ER-202502-143",
+      "submittedDate": "2025-03-03",
+      "totalAmount": 1600,
+      "status": "已批准",
+      "approvedAmount": 1600
+    },
+    {
+      "id": "ER-202502-144",
+      "reportNo": "ER-202502-144",
+      "submittedDate": "2025-03-01",
+      "totalAmount": 5900,
+      "status": "已拒绝"
+    },
+    {
+      "id": "ER-202502-145",
+      "reportNo": "ER-202502-145",
+      "submittedDate": "2025-02-16",
+      "totalAmount": 2350,
+      "status": "已拒绝"
+    },
+    {
+      "id": "ER-202502-146",
+      "reportNo": "ER-202502-146",
+      "submittedDate": "2025-02-15",
+      "totalAmount": 6180,
+      "status": "草稿"
+    },
+    {
+      "id": "ER-202502-147",
+      "reportNo": "ER-202502-147",
+      "submittedDate": "2025-02-10",
+      "totalAmount": 4630,
+      "status": "已拒绝"
+    },
+    {
+      "id": "ER-202502-148",
+      "reportNo": "ER-202502-148",
+      "submittedDate": "2025-03-05",
+      "totalAmount": 4720,
+      "status": "已拒绝"
+    },
+    {
+      "id": "ER-202503-149",
+      "reportNo": "ER-202503-149",
+      "submittedDate": "2025-03-31",
+      "totalAmount": 3880,
+      "status": "已批准",
+      "approvedAmount": 3880
+    },
+    {
+      "id": "ER-202503-150",
+      "reportNo": "ER-202503-150",
+      "submittedDate": "2025-03-24",
+      "totalAmount": 6420,
+      "status": "草稿"
+    },
+    {
+      "id": "ER-202503-151",
+      "reportNo": "ER-202503-151",
+      "submittedDate": "2025-03-30",
+      "totalAmount": 3890,
+      "status": "已付款",
+      "approvedAmount": 3890
+    },
+    {
+      "id": "ER-202503-152",
+      "reportNo": "ER-202503-152",
+      "submittedDate": "2025-03-12",
+      "totalAmount": 1500,
+      "status": "草稿"
+    },
+    {
+      "id": "ER-202503-153",
+      "reportNo": "ER-202503-153",
+      "submittedDate": "2025-03-17",
+      "totalAmount": 7020,
+      "status": "已批准",
+      "approvedAmount": 7020
+    },
+    {
+      "id": "ER-202503-154",
+      "reportNo": "ER-202503-154",
+      "submittedDate": "2025-03-20",
+      "totalAmount": 3230,
+      "status": "已付款",
+      "approvedAmount": 3230
+    },
+    {
+      "id": "ER-202503-155",
+      "reportNo": "ER-202503-155",
+      "submittedDate": "2025-03-19",
+      "totalAmount": 4860,
+      "status": "已拒绝"
+    },
+    {
+      "id": "ER-202503-156",
+      "reportNo": "ER-202503-156",
+      "submittedDate": "2025-03-19",
+      "totalAmount": 4460,
+      "status": "已拒绝"
+    },
+    {
+      "id": "ER-202503-157",
+      "reportNo": "ER-202503-157",
+      "submittedDate": "2025-03-15",
+      "totalAmount": 2010,
+      "status": "已拒绝"
+    },
+    {
+      "id": "ER-202503-158",
+      "reportNo": "ER-202503-158",
+      "submittedDate": "2025-03-28",
+      "totalAmount": 5410,
+      "status": "已付款",
+      "approvedAmount": 5410
+    },
+    {
+      "id": "ER-202503-159",
+      "reportNo": "ER-202503-159",
+      "submittedDate": "2025-03-16",
+      "totalAmount": 3330,
+      "status": "审批中"
+    },
+    {
+      "id": "ER-202503-160",
+      "reportNo": "ER-202503-160",
+      "submittedDate": "2025-03-31",
+      "totalAmount": 2060,
+      "status": "已拒绝"
+    },
+    {
+      "id": "ER-202503-161",
+      "reportNo": "ER-202503-161",
+      "submittedDate": "2025-03-16",
+      "totalAmount": 7490,
+      "status": "已拒绝"
+    },
+    {
+      "id": "ER-202503-162",
+      "reportNo": "ER-202503-162",
+      "submittedDate": "2025-03-11",
+      "totalAmount": 3580,
+      "status": "已付款",
+      "approvedAmount": 3580
+    },
+    {
+      "id": "ER-202503-163",
+      "reportNo": "ER-202503-163",
+      "submittedDate": "2025-03-26",
+      "totalAmount": 9170,
+      "status": "已拒绝"
+    },
+    {
+      "id": "ER-202503-164",
+      "reportNo": "ER-202503-164",
+      "submittedDate": "2025-03-23",
+      "totalAmount": 6170,
+      "status": "已付款",
+      "approvedAmount": 6170
+    },
+    {
+      "id": "ER-202503-165",
+      "reportNo": "ER-202503-165",
+      "submittedDate": "2025-03-19",
+      "totalAmount": 6120,
+      "status": "已付款",
+      "approvedAmount": 6120
+    },
+    {
+      "id": "ER-202503-166",
+      "reportNo": "ER-202503-166",
+      "submittedDate": "2025-03-24",
+      "totalAmount": 6110,
+      "status": "已拒绝"
+    },
+    {
+      "id": "ER-202503-167",
+      "reportNo": "ER-202503-167",
+      "submittedDate": "2025-03-13",
+      "totalAmount": 7470,
+      "status": "审批中"
+    },
+    {
+      "id": "ER-202503-168",
+      "reportNo": "ER-202503-168",
+      "submittedDate": "2025-03-30",
+      "totalAmount": 4400,
+      "status": "已拒绝"
+    },
+    {
+      "id": "ER-202503-169",
+      "reportNo": "ER-202503-169",
+      "submittedDate": "2025-03-23",
+      "totalAmount": 4450,
+      "status": "草稿"
+    },
+    {
+      "id": "ER-202503-170",
+      "reportNo": "ER-202503-170",
+      "submittedDate": "2025-03-24",
+      "totalAmount": 2810,
+      "status": "已拒绝"
+    },
+    {
+      "id": "ER-202503-171",
+      "reportNo": "ER-202503-171",
+      "submittedDate": "2025-03-07",
+      "totalAmount": 4320,
+      "status": "已拒绝"
+    },
+    {
+      "id": "ER-202503-172",
+      "reportNo": "ER-202503-172",
+      "submittedDate": "2025-03-23",
+      "totalAmount": 6110,
+      "status": "已付款",
+      "approvedAmount": 6110
+    },
+    {
+      "id": "ER-202503-173",
+      "reportNo": "ER-202503-173",
+      "submittedDate": "2025-03-14",
+      "totalAmount": 5750,
+      "status": "已拒绝"
+    },
+    {
+      "id": "ER-202503-174",
+      "reportNo": "ER-202503-174",
+      "submittedDate": "2025-03-24",
+      "totalAmount": 2240,
+      "status": "已付款",
+      "approvedAmount": 2240
+    },
+    {
+      "id": "ER-202503-175",
+      "reportNo": "ER-202503-175",
+      "submittedDate": "2025-03-07",
+      "totalAmount": 3540,
+      "status": "已批准",
+      "approvedAmount": 3540
+    },
+    {
+      "id": "ER-202503-176",
+      "reportNo": "ER-202503-176",
+      "submittedDate": "2025-03-25",
+      "totalAmount": 1130,
+      "status": "审批中"
+    },
+    {
+      "id": "ER-202503-177",
+      "reportNo": "ER-202503-177",
+      "submittedDate": "2025-03-22",
+      "totalAmount": 4750,
+      "status": "已拒绝"
+    },
+    {
+      "id": "ER-202503-178",
+      "reportNo": "ER-202503-178",
+      "submittedDate": "2025-03-08",
+      "totalAmount": 3090,
+      "status": "已批准",
+      "approvedAmount": 3090
+    }
+  ]
+}

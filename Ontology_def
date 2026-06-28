@@ -1,0 +1,70 @@
+一、 实体（Entity / Class）分类建议
+实体通常建议采用 “四维分类法”（或称为 “事、物、人、时空” 框架）。这种分类能很好地涵盖绝大多数企业级和领域级业务场景：
+
+1. 概念与对象类（Concept & Object）
+这是最基础的“名词”类实体，通常分为有形和无形：
+
+有形实体（Physical Object）： 真实存在的物理实体。如 设备、服务器、商品。
+
+无形/概念实体（Abstract Concept）： 逻辑或法律层面定义的概念。如 组织机构、公司部门、会计科目、行业分类、知识产权。
+
+2. 事件与活动类（Event & Activity）
+实体不只是静态的物体，业务流程、交易、变动都是实体。
+
+业务事件（Event）： 具有时间戳和不可逆性的动态实体。如 交易流水、审计事件、故障报修、任免事件。
+
+流程/活动（Activity/Process）： 正在进行或计划中的任务。如 研发项目、审批流程。
+
+为什么事件是实体而不是关系？ 因为事件本身往往包含很多属性（如发生时间、金额、状态），且会同时连接多个不同的对象（如一笔交易包含买方、卖方、商品、支付渠道）。将其设计为“事件实体”可以作为中介节点，完美解决多目关系问题。
+
+3. 主体与角色类（Agent & Role）
+区分“谁”在参与，以及他/它以“什么身份”参与。
+
+主体（Agent）： 具备自主行为能力的实体。如 自然人、法人（公司）、软件系统（AI Agent/机器人）。
+
+角色（Role）： 主体在特定场景下的身份（建议独立或作为标签）。如 供应商、客户、项目经理、核心研发人员。
+
+4. 时空与环境类（Temporal & Spatial）
+用于提供上下文的基准维度。
+
+时间/周期（Temporal）： 如 财年、季度、里程碑阶段。
+
+空间/位置（Spatial）： 如 国家、城市、机房位置、虚拟网络区域。
+
+二、 关系（Relationship / Property）分类建议
+在本体设计中（如使用 OWL 规范），关系通常被严格划分为对象属性（Object Property，连接实体与实体）和数据属性（Data Property，连接实体与字面量）。
+
+这里我们重点讨论实体与实体之间的关系（Object Property）分类，建议分为以下五大核心大类：
+
+1. 结构与层级关系（Structural & Hierarchical）
+用于构建知识图谱的骨架，通常具有传递性（Transitive）。
+
+上下位关系（isA / SubClassOf）： 概念的继承。如 [制造型企业] isA [企业]。
+
+组成/部分关系（partOf / hasPart）： 物理或逻辑上的包含。如 [财务部] partOf [集团总部]，[主板] partOf [服务器]。
+
+2. 关联与业务关系（Associative & Business）
+反映业务逻辑横向连接的关系。
+
+拥有/所属（Owns / Belongs to）： 如 [中兴新云] hasAsset [某管理软件系统]。
+
+合作/交互（Interacts / Cooperates）： 如 [企业A] hasSupplier [企业B]。
+
+3. 动态参与关系（Participatory）
+连接“动态事件”与“静态主体/客体”的关系。
+
+发起/执行（InitiatedBy / ExecutedBy）： 如 [研发项目A] managedBy [张三]。
+
+作用对象（Target / ObjectOf）： 如 [付款事件001] appliedTo [发票XML992]。
+
+4. 时间与因果关系（Temporal & Causal）
+用于流程推理、时序分析和根因分析。
+
+时序关系（Before / After）： 如 [M1里程碑] before [M2里程碑]。
+
+因果/触发（Causes / Triggers）： 如 [配置错误] causes [系统故障]。
+
+5. 同义与映射关系（Mapping / Identity）
+用于数据集成和实体对齐（Entity Resolution）。
+
+等价关系（sameAs）： 不同数据源中的同一个实体。如 [Zhongxing Xinyun] sameAs [中兴新云]。

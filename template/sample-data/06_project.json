@@ -1,0 +1,112 @@
+{
+  "data": [
+    {
+      "id": "PROJ-2024-001",
+      "code": "PROJ-2024-001",
+      "name": "北京某银行信贷核心系统改造",
+      "budgetCode": "BUD-2024-001",
+      "startDate": "2024-03-01",
+      "endDate": "2025-06-30",
+      "status": "进行中"
+    },
+    {
+      "id": "PROJ-2024-002",
+      "code": "PROJ-2024-002",
+      "name": "上海某保险数字化平台",
+      "budgetCode": "BUD-2024-002",
+      "startDate": "2024-04-01",
+      "endDate": "2025-03-31",
+      "status": "进行中"
+    },
+    {
+      "id": "PROJ-2024-003",
+      "code": "PROJ-2024-003",
+      "name": "深圳某互联网企业技术咨询",
+      "budgetCode": "BUD-2024-003",
+      "startDate": "2024-05-01",
+      "endDate": "2025-04-30",
+      "status": "进行中"
+    },
+    {
+      "id": "PROJ-2024-004",
+      "code": "PROJ-2024-004",
+      "name": "杭州某电商供应链系统",
+      "budgetCode": "BUD-2024-004",
+      "startDate": "2024-06-01",
+      "endDate": "2025-05-31",
+      "status": "进行中"
+    },
+    {
+      "id": "PROJ-2024-005",
+      "code": "PROJ-2024-005",
+      "name": "成都某制造企业ERP改造",
+      "budgetCode": "BUD-2024-005",
+      "startDate": "2024-01-15",
+      "endDate": "2025-01-14",
+      "status": "进行中"
+    },
+    {
+      "id": "PROJ-2024-006",
+      "code": "PROJ-2024-006",
+      "name": "重庆某政务系统建设",
+      "budgetCode": "BUD-2024-006",
+      "startDate": "2024-07-01",
+      "endDate": "2025-06-30",
+      "status": "进行中"
+    },
+    {
+      "id": "PROJ-2024-007",
+      "code": "PROJ-2024-007",
+      "name": "南京某能源集团智能管控",
+      "budgetCode": "BUD-2024-007",
+      "startDate": "2024-08-01",
+      "endDate": "2025-07-31",
+      "status": "进行中"
+    },
+    {
+      "id": "PROJ-2024-008",
+      "code": "PROJ-2024-008",
+      "name": "西安某高校数字校园",
+      "budgetCode": "BUD-2024-008",
+      "startDate": "2024-09-01",
+      "endDate": "2025-08-31",
+      "status": "进行中"
+    },
+    {
+      "id": "PROJ-2024-009",
+      "code": "PROJ-2024-009",
+      "name": "武汉交付中心内部建设",
+      "budgetCode": "BUD-2024-009",
+      "startDate": "2024-01-01",
+      "endDate": "2024-12-31",
+      "status": "进行中"
+    },
+    {
+      "id": "PROJ-2024-010",
+      "code": "PROJ-2024-010",
+      "name": "厦门某港口物流系统",
+      "budgetCode": "BUD-2024-010",
+      "startDate": "2024-10-01",
+      "endDate": "2025-09-30",
+      "status": "进行中"
+    },
+    {
+      "id": "PROJ-2023-015",
+      "code": "PROJ-2023-015",
+      "name": "长沙某医疗集团HIS系统",
+      "budgetCode": "BUD-2023-015",
+      "startDate": "2023-06-01",
+      "endDate": "2024-05-31",
+      "status": "已结束"
+    },
+    {
+      "id": "PROJ-2023-016",
+      "code": "PROJ-2023-016",
+      "name": "苏州某半导体企业MES",
+      "budgetCode": "BUD-2023-016",
+      "startDate": "2023-09-01",
+      "endDate": "2024-08-31",
+      "status": "已结束"
+    }
+  ]
+}

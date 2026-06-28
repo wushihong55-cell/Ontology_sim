@@ -1,0 +1,1301 @@
+{
+  "workspace": "Customer Knowledge Ontology",
+  "version": "0.1.0",
+  "summary": "当前工作区包含 18 个实体和 21 条关系。",
+  "entities": [
+    {
+      "id": "tn-company",
+      "name": "Company",
+      "label": "公司",
+      "description": "互联网游戏公司法人实体，约50人规模。",
+      "properties": [
+        {
+          "name": "id",
+          "nameZh": "ID",
+          "type": "string",
+          "required": true,
+          "description": "公司唯一标识"
+        },
+        {
+          "name": "name",
+          "nameZh": "公司名称",
+          "type": "string",
+          "required": true,
+          "description": "公司全称"
+        },
+        {
+          "name": "industry",
+          "nameZh": "所属行业",
+          "type": "string",
+          "required": false,
+          "description": "如：互联网游戏"
+        },
+        {
+          "name": "scale",
+          "nameZh": "员工规模",
+          "type": "number",
+          "required": false,
+          "description": "在职员工人数"
+        },
+        {
+          "name": "city",
+          "nameZh": "注册城市",
+          "type": "string",
+          "required": false,
+          "description": "公司注册所在城市"
+        }
+      ]
+    },
+    {
+      "id": "tn-department",
+      "name": "Department",
+      "label": "部门",
+      "description": "公司内部职能部门，如产品、研发、市场、运营、行政、财务等。",
+      "properties": [
+        {
+          "name": "id",
+          "nameZh": "ID",
+          "type": "string",
+          "required": true,
+          "description": "部门唯一标识"
+        },
+        {
+          "name": "name",
+          "nameZh": "部门名称",
+          "type": "string",
+          "required": true,
+          "description": "部门英文名"
+        },
+        {
+          "name": "nameZh",
+          "nameZh": "部门中文名",
+          "type": "string",
+          "required": false,
+          "description": "部门中文名称"
+        },
+        {
+          "name": "headcount",
+          "nameZh": "人数",
+          "type": "number",
+          "required": false,
+          "description": "部门在职人数"
+        },
+        {
+          "name": "budgetCenter",
+          "nameZh": "成本中心",
+          "type": "string",
+          "required": false,
+          "description": "财务成本中心编码"
+        }
+      ]
+    },
+    {
+      "id": "tn-employee",
+      "name": "Employee",
+      "label": "员工",
+      "description": "公司在职员工，具备出差申请和报销提交权限。",
+      "properties": [
+        {
+          "name": "id",
+          "nameZh": "ID",
+          "type": "string",
+          "required": true,
+          "description": "员工唯一标识"
+        },
+        {
+          "name": "name",
+          "nameZh": "姓名",
+          "type": "string",
+          "required": true,
+          "description": "员工真实姓名"
+        },
+        {
+          "name": "empNo",
+          "nameZh": "工号",
+          "type": "string",
+          "required": true,
+          "description": "员工工号"
+        },
+        {
+          "name": "email",
+          "nameZh": "邮箱",
+          "type": "string",
+          "required": false,
+          "description": "公司邮箱"
+        },
+        {
+          "name": "phone",
+          "nameZh": "手机",
+          "type": "string",
+          "required": false,
+          "description": "联系电话"
+        },
+        {
+          "name": "hireDate",
+          "nameZh": "入职日期",
+          "type": "date",
+          "required": false,
+          "description": "入职日期"
+        },
+        {
+          "name": "status",
+          "nameZh": "状态",
+          "type": "enum",
+          "required": false,
+          "description": "在职/离职/试用期"
+        }
+      ]
+    },
+    {
+      "id": "tn-jobgrade",
+      "name": "JobGrade",
+      "label": "职级",
+      "description": "员工职级体系，管理序列M1-M4，技术序列P1-P8，决定差旅住宿标准（高/中/低三档）。",
+      "properties": [
+        {
+          "name": "id",
+          "nameZh": "ID",
+          "type": "string",
+          "required": true,
+          "description": "职级唯一标识"
+        },
+        {
+          "name": "code",
+          "nameZh": "职级编码",
+          "type": "string",
+          "required": true,
+          "description": "如P1-P8或M1-M4"
+        },
+        {
+          "name": "name",
+          "nameZh": "职级名称",
+          "type": "string",
+          "required": true,
+          "description": "如高级工程师、技术总监"
+        },
+        {
+          "name": "gradeType",
+          "nameZh": "序列",
+          "type": "enum",
+          "required": true,
+          "description": "管理序列/技术序列"
+        },
+        {
+          "name": "tier",
+          "nameZh": "档次",
+          "type": "enum",
+          "required": true,
+          "description": "高档/中档/低档"
+        },
+        {
+          "name": "accommodationLimit",
+          "nameZh": "住宿上限（元/晚）",
+          "type": "number",
+          "required": true,
+          "description": "高档≥800，中档400-800，低档≤400"
+        },
+        {
+          "name": "dailyMealAllowance",
+          "nameZh": "日餐补（元/天）",
+          "type": "number",
+          "required": false,
+          "description": "每日餐饮补贴标准"
+        },
+        {
+          "name": "airClass",
+          "nameZh": "机舱等级",
+          "type": "enum",
+          "required": false,
+          "description": "经济舱/商务舱/头等舱"
+        }
+      ]
+    },
+    {
+      "id": "tn-businesstrip",
+      "name": "BusinessTrip",
+      "label": "出差申请",
+      "description": "员工发起的出差申请，记录出行目的、时间、目的地和预算，经审批后生效。",
+      "properties": [
+        {
+          "name": "id",
+          "nameZh": "ID",
+          "type": "string",
+          "required": true,
+          "description": "申请单唯一标识"
+        },
+        {
+          "name": "tripNo",
+          "nameZh": "申请单号",
+          "type": "string",
+          "required": true,
+          "description": "出差申请编号"
+        },
+        {
+          "name": "purpose",
+          "nameZh": "出差事由",
+          "type": "string",
+          "required": true,
+          "description": "出差目的说明"
+        },
+        {
+          "name": "departureCity",
+          "nameZh": "出发城市",
+          "type": "string",
+          "required": true,
+          "description": "出发地城市"
+        },
+        {
+          "name": "destinationCity",
+          "nameZh": "目的地城市",
+          "type": "string",
+          "required": true,
+          "description": "目的地城市"
+        },
+        {
+          "name": "departureDate",
+          "nameZh": "出发日期",
+          "type": "date",
+          "required": true,
+          "description": "计划出发日期"
+        },
+        {
+          "name": "returnDate",
+          "nameZh": "返回日期",
+          "type": "date",
+          "required": true,
+          "description": "计划返回日期"
+        },
+        {
+          "name": "days",
+          "nameZh": "出差天数",
+          "type": "number",
+          "required": false,
+          "description": "出差持续天数"
+        },
+        {
+          "name": "status",
+          "nameZh": "状态",
+          "type": "enum",
+          "required": true,
+          "description": "待审批/已批准/出行中/已完成/已拒绝"
+        },
+        {
+          "name": "budgetAmount",
+          "nameZh": "预算金额",
+          "type": "number",
+          "required": false,
+          "description": "预估出差总费用"
+        }
+      ]
+    },
+    {
+      "id": "tn-expensereport",
+      "name": "ExpenseReport",
+      "label": "报销单",
+      "description": "员工出差归来后提交的费用报销申请，经财务和上级审批后付款。",
+      "properties": [
+        {
+          "name": "id",
+          "nameZh": "ID",
+          "type": "string",
+          "required": true,
+          "description": "报销单唯一标识"
+        },
+        {
+          "name": "reportNo",
+          "nameZh": "报销单号",
+          "type": "string",
+          "required": true,
+          "description": "报销单编号"
+        },
+        {
+          "name": "submittedDate",
+          "nameZh": "提交日期",
+          "type": "date",
+          "required": true,
+          "description": "提交报销的日期"
+        },
+        {
+          "name": "totalAmount",
+          "nameZh": "申请金额",
+          "type": "number",
+          "required": true,
+          "description": "总报销金额（元）"
+        },
+        {
+          "name": "approvedAmount",
+          "nameZh": "批准金额",
+          "type": "number",
+          "required": false,
+          "description": "实际审批通过金额"
+        },
+        {
+          "name": "status",
+          "nameZh": "状态",
+          "type": "enum",
+          "required": true,
+          "description": "草稿/审批中/已批准/已付款/已拒绝"
+        },
+        {
+          "name": "rejectReason",
+          "nameZh": "拒绝原因",
+          "type": "string",
+          "required": false,
+          "description": "审批拒绝时的说明"
+        }
+      ]
+    },
+    {
+      "id": "tn-flightticket",
+      "name": "FlightTicket",
+      "label": "机票",
+      "description": "航空公司出具的客运机票，差旅中最常用的长途交通方式，需配合行程单报销。",
+      "properties": [
+        {
+          "name": "id",
+          "nameZh": "ID",
+          "type": "string",
+          "required": true,
+          "description": "机票唯一标识"
+        },
+        {
+          "name": "ticketNo",
+          "nameZh": "票号",
+          "type": "string",
+          "required": true,
+          "description": "航空公司票号"
+        },
+        {
+          "name": "flightNo",
+          "nameZh": "航班号",
+          "type": "string",
+          "required": true,
+          "description": "如CA1234"
+        },
+        {
+          "name": "airline",
+          "nameZh": "航空公司",
+          "type": "string",
+          "required": false,
+          "description": "如国航、南航、东航"
+        },
+        {
+          "name": "from",
+          "nameZh": "出发机场",
+          "type": "string",
+          "required": true,
+          "description": "出发机场三字码或城市"
+        },
+        {
+          "name": "to",
+          "nameZh": "到达机场",
+          "type": "string",
+          "required": true,
+          "description": "到达机场三字码或城市"
+        },
+        {
+          "name": "departureTime",
+          "nameZh": "起飞时间",
+          "type": "date",
+          "required": true,
+          "description": "计划起飞时间"
+        },
+        {
+          "name": "arrivalTime",
+          "nameZh": "到达时间",
+          "type": "date",
+          "required": false,
+          "description": "计划到达时间"
+        },
+        {
+          "name": "seatClass",
+          "nameZh": "舱位",
+          "type": "enum",
+          "required": true,
+          "description": "经济舱/商务舱/头等舱"
+        },
+        {
+          "name": "amount",
+          "nameZh": "票价（元）",
+          "type": "number",
+          "required": true,
+          "description": "实际支付票价"
+        }
+      ]
+    },
+    {
+      "id": "tn-trainticket",
+      "name": "TrainTicket",
+      "label": "火车/高铁票",
+      "description": "铁路旅客运输票，包括高速铁路（高铁/动车）和普速铁路，票面即报销凭证。",
+      "properties": [
+        {
+          "name": "id",
+          "nameZh": "ID",
+          "type": "string",
+          "required": true,
+          "description": "票务唯一标识"
+        },
+        {
+          "name": "trainNo",
+          "nameZh": "车次",
+          "type": "string",
+          "required": true,
+          "description": "如G123、Z456、K789"
+        },
+        {
+          "name": "from",
+          "nameZh": "出发站",
+          "type": "string",
+          "required": true,
+          "description": "出发车站"
+        },
+        {
+          "name": "to",
+          "nameZh": "到达站",
+          "type": "string",
+          "required": true,
+          "description": "到达车站"
+        },
+        {
+          "name": "departureTime",
+          "nameZh": "出发时间",
+          "type": "date",
+          "required": true,
+          "description": "计划发车时间"
+        },
+        {
+          "name": "seatType",
+          "nameZh": "座位类型",
+          "type": "enum",
+          "required": true,
+          "description": "高铁：二等/一等/商务座；普铁：硬座/硬卧/软卧"
+        },
+        {
+          "name": "amount",
+          "nameZh": "票价（元）",
+          "type": "number",
+          "required": true,
+          "description": "实际支付票价"
+        }
+      ]
+    },
+    {
+      "id": "tn-busticket",
+      "name": "LongDistanceBusTicket",
+      "label": "长途车票",
+      "description": "城际长途客运汽车票，适用于无火车直达的短途差旅或末端接驳。",
+      "properties": [
+        {
+          "name": "id",
+          "nameZh": "ID",
+          "type": "string",
+          "required": true,
+          "description": "票务唯一标识"
+        },
+        {
+          "name": "company",
+          "nameZh": "运营公司",
+          "type": "string",
+          "required": false,
+          "description": "客运公司名称"
+        },
+        {
+          "name": "from",
+          "nameZh": "出发站",
+          "type": "string",
+          "required": true,
+          "description": "出发汽车站"
+        },
+        {
+          "name": "to",
+          "nameZh": "到达站",
+          "type": "string",
+          "required": true,
+          "description": "到达汽车站"
+        },
+        {
+          "name": "departureTime",
+          "nameZh": "出发时间",
+          "type": "date",
+          "required": true,
+          "description": "计划发车时间"
+        },
+        {
+          "name": "seatType",
+          "nameZh": "座位类型",
+          "type": "enum",
+          "required": false,
+          "description": "普通座/卧铺"
+        },
+        {
+          "name": "amount",
+          "nameZh": "票价（元）",
+          "type": "number",
+          "required": true,
+          "description": "实际支付票价"
+        }
+      ]
+    },
+    {
+      "id": "tn-shipticket",
+      "name": "ShipTicket",
+      "label": "船票",
+      "description": "水路客运船票，适用于岛屿、沿江沿海等特定差旅路线。",
+      "properties": [
+        {
+          "name": "id",
+          "nameZh": "ID",
+          "type": "string",
+          "required": true,
+          "description": "票务唯一标识"
+        },
+        {
+          "name": "shipName",
+          "nameZh": "船名",
+          "type": "string",
+          "required": false,
+          "description": "轮渡或邮轮名称"
+        },
+        {
+          "name": "route",
+          "nameZh": "航线",
+          "type": "string",
+          "required": false,
+          "description": "航线名称"
+        },
+        {
+          "name": "from",
+          "nameZh": "出发港口",
+          "type": "string",
+          "required": true,
+          "description": "出发港口或码头"
+        },
+        {
+          "name": "to",
+          "nameZh": "到达港口",
+          "type": "string",
+          "required": true,
+          "description": "到达港口或码头"
+        },
+        {
+          "name": "departureDate",
+          "nameZh": "出发时间",
+          "type": "date",
+          "required": true,
+          "description": "计划出发时间"
+        },
+        {
+          "name": "cabinClass",
+          "nameZh": "舱位等级",
+          "type": "enum",
+          "required": false,
+          "description": "普通/二等/一等/特等舱"
+        },
+        {
+          "name": "amount",
+          "nameZh": "票价（元）",
+          "type": "number",
+          "required": true,
+          "description": "实际支付票价"
+        }
+      ]
+    },
+    {
+      "id": "tn-taxireceipt",
+      "name": "TaxiReceipt",
+      "label": "出租/网约车票",
+      "description": "出租车或网约车（滴滴、曹操、T3等）的行程收据，适用于城市内接送机/站及商务用车。",
+      "properties": [
+        {
+          "name": "id",
+          "nameZh": "ID",
+          "type": "string",
+          "required": true,
+          "description": "票据唯一标识"
+        },
+        {
+          "name": "date",
+          "nameZh": "用车日期",
+          "type": "date",
+          "required": true,
+          "description": "用车日期"
+        },
+        {
+          "name": "type",
+          "nameZh": "用车类型",
+          "type": "enum",
+          "required": true,
+          "description": "出租车/滴滴/曹操出行/T3出行"
+        },
+        {
+          "name": "from",
+          "nameZh": "出发地",
+          "type": "string",
+          "required": true,
+          "description": "上车地点"
+        },
+        {
+          "name": "to",
+          "nameZh": "到达地",
+          "type": "string",
+          "required": true,
+          "description": "下车地点"
+        },
+        {
+          "name": "amount",
+          "nameZh": "金额（元）",
+          "type": "number",
+          "required": true,
+          "description": "实际支付金额"
+        },
+        {
+          "name": "invoiceType",
+          "nameZh": "凭证类型",
+          "type": "enum",
+          "required": true,
+          "description": "电子发票/纸质发票/行程收据"
+        }
+      ]
+    },
+    {
+      "id": "tn-transitticket",
+      "name": "UrbanTransitTicket",
+      "label": "地铁/公交票",
+      "description": "城市轨道交通（地铁）或公共汽车票，金额小但需统一归集报销。",
+      "properties": [
+        {
+          "name": "id",
+          "nameZh": "ID",
+          "type": "string",
+          "required": true,
+          "description": "票据唯一标识"
+        },
+        {
+          "name": "date",
+          "nameZh": "乘车日期",
+          "type": "date",
+          "required": true,
+          "description": "乘车日期"
+        },
+        {
+          "name": "city",
+          "nameZh": "城市",
+          "type": "string",
+          "required": true,
+          "description": "乘车所在城市"
+        },
+        {
+          "name": "mode",
+          "nameZh": "交通方式",
+          "type": "enum",
+          "required": true,
+          "description": "地铁/公交"
+        },
+        {
+          "name": "from",
+          "nameZh": "起始站",
+          "type": "string",
+          "required": false,
+          "description": "上车站/站名"
+        },
+        {
+          "name": "to",
+          "nameZh": "到达站",
+          "type": "string",
+          "required": false,
+          "description": "下车站/站名"
+        },
+        {
+          "name": "amount",
+          "nameZh": "金额（元）",
+          "type": "number",
+          "required": true,
+          "description": "实际支付金额"
+        }
+      ]
+    },
+    {
+      "id": "tn-hotelstay",
+      "name": "HotelStay",
+      "label": "住宿记录",
+      "description": "员工出差期间的酒店住宿记录，包含入住/退房信息及费用，须符合职级住宿标准。",
+      "properties": [
+        {
+          "name": "id",
+          "nameZh": "ID",
+          "type": "string",
+          "required": true,
+          "description": "住宿记录唯一标识"
+        },
+        {
+          "name": "hotelName",
+          "nameZh": "酒店名称",
+          "type": "string",
+          "required": true,
+          "description": "酒店全称"
+        },
+        {
+          "name": "city",
+          "nameZh": "所在城市",
+          "type": "string",
+          "required": true,
+          "description": "酒店所在城市"
+        },
+        {
+          "name": "starRating",
+          "nameZh": "星级",
+          "type": "number",
+          "required": false,
+          "description": "酒店星级（1-5星）"
+        },
+        {
+          "name": "checkIn",
+          "nameZh": "入住日期",
+          "type": "date",
+          "required": true,
+          "description": "入住日期"
+        },
+        {
+          "name": "checkOut",
+          "nameZh": "退房日期",
+          "type": "date",
+          "required": true,
+          "description": "退房日期"
+        },
+        {
+          "name": "nights",
+          "nameZh": "住宿天数",
+          "type": "number",
+          "required": false,
+          "description": "实际住宿夜数"
+        },
+        {
+          "name": "roomType",
+          "nameZh": "房型",
+          "type": "string",
+          "required": false,
+          "description": "如标准大床/标准双床/豪华间"
+        },
+        {
+          "name": "amountPerNight",
+          "nameZh": "每晚价格（元）",
+          "type": "number",
+          "required": true,
+          "description": "每晚实际房费"
+        },
+        {
+          "name": "totalAmount",
+          "nameZh": "总金额（元）",
+          "type": "number",
+          "required": true,
+          "description": "住宿总费用"
+        },
+        {
+          "name": "withinStandard",
+          "nameZh": "是否合规",
+          "type": "boolean",
+          "required": true,
+          "description": "是否符合该员工职级住宿标准"
+        }
+      ]
+    },
+    {
+      "id": "tn-invoice",
+      "name": "Invoice",
+      "label": "发票",
+      "description": "税务局监制的增值税发票，是费用报销的法定凭证，分专用发票和普通发票（含电子）。",
+      "properties": [
+        {
+          "name": "id",
+          "nameZh": "ID",
+          "type": "string",
+          "required": true,
+          "description": "记录唯一标识"
+        },
+        {
+          "name": "invoiceNo",
+          "nameZh": "发票号码",
+          "type": "string",
+          "required": true,
+          "description": "发票右上角号码（8位）"
+        },
+        {
+          "name": "invoiceCode",
+          "nameZh": "发票代码",
+          "type": "string",
+          "required": false,
+          "description": "纸质发票代码（12位）"
+        },
+        {
+          "name": "invoiceType",
+          "nameZh": "发票类型",
+          "type": "enum",
+          "required": true,
+          "description": "增值税专用发票/增值税普通发票/电子普通发票"
+        },
+        {
+          "name": "sellerName",
+          "nameZh": "销售方名称",
+          "type": "string",
+          "required": true,
+          "description": "开票方公司名称"
+        },
+        {
+          "name": "sellerTaxId",
+          "nameZh": "销售方税号",
+          "type": "string",
+          "required": false,
+          "description": "销售方纳税人识别号"
+        },
+        {
+          "name": "buyerName",
+          "nameZh": "购买方名称",
+          "type": "string",
+          "required": true,
+          "description": "报销公司名称"
+        },
+        {
+          "name": "amount",
+          "nameZh": "税前金额（元）",
+          "type": "number",
+          "required": true,
+          "description": "不含税金额"
+        },
+        {
+          "name": "taxRate",
+          "nameZh": "税率",
+          "type": "number",
+          "required": false,
+          "description": "适用税率，如0.06/0.09/0.13"
+        },
+        {
+          "name": "taxAmount",
+          "nameZh": "税额（元）",
+          "type": "number",
+          "required": false,
+          "description": "增值税额"
+        },
+        {
+          "name": "issueDate",
+          "nameZh": "开票日期",
+          "type": "date",
+          "required": true,
+          "description": "发票开具日期"
+        }
+      ]
+    },
+    {
+      "id": "tn-airitinerary",
+      "name": "AirItinerary",
+      "label": "航空行程单",
+      "description": "航空电子客票的报销凭证，由航空公司或代理出具，税务局认可的合规差旅凭证（替代机票发票）。",
+      "properties": [
+        {
+          "name": "id",
+          "nameZh": "ID",
+          "type": "string",
+          "required": true,
+          "description": "行程单唯一标识"
+        },
+        {
+          "name": "passengerName",
+          "nameZh": "旅客姓名",
+          "type": "string",
+          "required": true,
+          "description": "乘机旅客姓名"
+        },
+        {
+          "name": "idType",
+          "nameZh": "证件类型",
+          "type": "enum",
+          "required": false,
+          "description": "身份证/护照/其他"
+        },
+        {
+          "name": "idNo",
+          "nameZh": "证件号码",
+          "type": "string",
+          "required": false,
+          "description": "旅客证件号码"
+        },
+        {
+          "name": "ticketNo",
+          "nameZh": "票号",
+          "type": "string",
+          "required": true,
+          "description": "航空电子客票号"
+        },
+        {
+          "name": "flightNo",
+          "nameZh": "航班号",
+          "type": "string",
+          "required": true,
+          "description": "如CA1234"
+        },
+        {
+          "name": "issueDate",
+          "nameZh": "填开日期",
+          "type": "date",
+          "required": true,
+          "description": "行程单填开日期"
+        },
+        {
+          "name": "total",
+          "nameZh": "票价合计（元）",
+          "type": "number",
+          "required": true,
+          "description": "含税价合计"
+        },
+        {
+          "name": "electronicNo",
+          "nameZh": "电子客票验证码",
+          "type": "string",
+          "required": false,
+          "description": "验证真伪的校验码"
+        }
+      ]
+    },
+    {
+      "id": "tn-hotelreceipt",
+      "name": "HotelReceipt",
+      "label": "住宿水单",
+      "description": "酒店结算清单（水单），列明入住时间、房型及每晚费用明细，配合酒店发票一同报销。",
+      "properties": [
+        {
+          "name": "id",
+          "nameZh": "ID",
+          "type": "string",
+          "required": true,
+          "description": "水单唯一标识"
+        },
+        {
+          "name": "guestName",
+          "nameZh": "住客姓名",
+          "type": "string",
+          "required": true,
+          "description": "入住旅客姓名"
+        },
+        {
+          "name": "checkIn",
+          "nameZh": "入住日期",
+          "type": "date",
+          "required": true,
+          "description": "入住日期"
+        },
+        {
+          "name": "checkOut",
+          "nameZh": "退房日期",
+          "type": "date",
+          "required": true,
+          "description": "退房日期"
+        },
+        {
+          "name": "roomCount",
+          "nameZh": "房间数",
+          "type": "number",
+          "required": false,
+          "description": "入住房间数量"
+        },
+        {
+          "name": "roomType",
+          "nameZh": "房型",
+          "type": "string",
+          "required": false,
+          "description": "标准间/大床房等"
+        },
+        {
+          "name": "amountPerNight",
+          "nameZh": "每晚房价（元）",
+          "type": "number",
+          "required": true,
+          "description": "每晚房费"
+        },
+        {
+          "name": "totalAmount",
+          "nameZh": "总金额（元）",
+          "type": "number",
+          "required": true,
+          "description": "住宿总费用"
+        },
+        {
+          "name": "issueDate",
+          "nameZh": "开具日期",
+          "type": "date",
+          "required": true,
+          "description": "水单开具日期"
+        }
+      ]
+    },
+    {
+      "id": "tn-city",
+      "name": "City",
+      "label": "城市",
+      "description": "差旅出发地或目的地城市，用于行程记录和差旅补贴标准的地区匹配。",
+      "properties": [
+        {
+          "name": "id",
+          "nameZh": "ID",
+          "type": "string",
+          "required": true,
+          "description": "城市唯一标识"
+        },
+        {
+          "name": "name",
+          "nameZh": "城市名称",
+          "type": "string",
+          "required": true,
+          "description": "城市中文名"
+        },
+        {
+          "name": "province",
+          "nameZh": "所属省份",
+          "type": "string",
+          "required": false,
+          "description": "所属省/直辖市/自治区"
+        },
+        {
+          "name": "country",
+          "nameZh": "国家",
+          "type": "string",
+          "required": false,
+          "description": "默认：中国"
+        },
+        {
+          "name": "isPopularBizDestination",
+          "nameZh": "热门商务城市",
+          "type": "boolean",
+          "required": false,
+          "description": "是否为常见差旅目的地，如北上广深杭"
+        }
+      ]
+    },
+    {
+      "id": "entity-c690xvx",
+      "name": "Project",
+      "label": "项目",
+      "description": "公司内部项目或任务，是员工出差的核心业务驱动因素，差旅费用按项目归集和分摊。",
+      "properties": [
+        {
+          "name": "id",
+          "nameZh": "ID",
+          "type": "string",
+          "required": true,
+          "description": "项目唯一标识"
+        },
+        {
+          "name": "code",
+          "nameZh": "项目编号",
+          "type": "string",
+          "required": true,
+          "description": "项目唯一编码，如PROJ-2024-001"
+        },
+        {
+          "name": "name",
+          "nameZh": "项目名称",
+          "type": "string",
+          "required": true,
+          "description": "项目全称"
+        },
+        {
+          "name": "budgetCode",
+          "nameZh": "预算编码",
+          "type": "string",
+          "required": false,
+          "description": "财务预算科目编码，用于费用分摊"
+        },
+        {
+          "name": "startDate",
+          "nameZh": "开始日期",
+          "type": "date",
+          "required": false,
+          "description": "项目开始日期"
+        },
+        {
+          "name": "endDate",
+          "nameZh": "结束日期",
+          "type": "date",
+          "required": false,
+          "description": "项目计划结束日期"
+        },
+        {
+          "name": "status",
+          "nameZh": "项目状态",
+          "type": "enum",
+          "required": false,
+          "description": "进行中/已结束/已取消"
+        }
+      ]
+    }
+  ],
+  "relations": [
+    {
+      "id": "te-dept-company",
+      "name": "partOf",
+      "source": "Department",
+      "target": "Company",
+      "cardinality": "N:1",
+      "description": "部门属于公司"
+    },
+    {
+      "id": "te-emp-dept",
+      "name": "belongsTo",
+      "source": "Employee",
+      "target": "Department",
+      "cardinality": "N:1",
+      "description": "员工属于某个部门"
+    },
+    {
+      "id": "te-emp-grade",
+      "name": "holdsGrade",
+      "source": "Employee",
+      "target": "JobGrade",
+      "cardinality": "N:1",
+      "description": "员工拥有特定职级，决定差旅标准"
+    },
+    {
+      "id": "te-emp-trip",
+      "name": "applies",
+      "source": "Employee",
+      "target": "BusinessTrip",
+      "cardinality": "1:N",
+      "description": "员工发起出差申请"
+    },
+    {
+      "id": "te-trip-city",
+      "name": "destinatesTo",
+      "source": "BusinessTrip",
+      "target": "City",
+      "cardinality": "N:1",
+      "description": "出差前往的目的城市"
+    },
+    {
+      "id": "te-emp-report",
+      "name": "submits",
+      "source": "Employee",
+      "target": "ExpenseReport",
+      "cardinality": "1:N",
+      "description": "员工提交报销单"
+    },
+    {
+      "id": "te-trip-report",
+      "name": "generates",
+      "source": "BusinessTrip",
+      "target": "ExpenseReport",
+      "cardinality": "1:1",
+      "description": "出差结束后产生报销单"
+    },
+    {
+      "id": "te-trip-flight",
+      "name": "includesFlight",
+      "source": "BusinessTrip",
+      "target": "FlightTicket",
+      "cardinality": "1:N",
+      "description": "出差行程包含机票"
+    },
+    {
+      "id": "te-trip-train",
+      "name": "includesTrain",
+      "source": "BusinessTrip",
+      "target": "TrainTicket",
+      "cardinality": "1:N",
+      "description": "出差行程包含火车/高铁票"
+    },
+    {
+      "id": "te-trip-bus",
+      "name": "includesBus",
+      "source": "BusinessTrip",
+      "target": "LongDistanceBusTicket",
+      "cardinality": "1:N",
+      "description": "出差行程包含长途车票"
+    },
+    {
+      "id": "te-trip-ship",
+      "name": "includesShip",
+      "source": "BusinessTrip",
+      "target": "ShipTicket",
+      "cardinality": "1:N",
+      "description": "出差行程包含船票"
+    },
+    {
+      "id": "te-trip-taxi",
+      "name": "includesTaxi",
+      "source": "BusinessTrip",
+      "target": "TaxiReceipt",
+      "cardinality": "1:N",
+      "description": "出差期间包含出租/网约车费"
+    },
+    {
+      "id": "te-trip-transit",
+      "name": "includesTransit",
+      "source": "BusinessTrip",
+      "target": "UrbanTransitTicket",
+      "cardinality": "1:N",
+      "description": "出差期间包含地铁/公交票"
+    },
+    {
+      "id": "te-trip-hotel",
+      "name": "includesHotel",
+      "source": "BusinessTrip",
+      "target": "HotelStay",
+      "cardinality": "1:N",
+      "description": "出差期间包含住宿记录"
+    },
+    {
+      "id": "te-flight-invoice",
+      "name": "hasInvoice",
+      "source": "FlightTicket",
+      "target": "Invoice",
+      "cardinality": "1:1",
+      "description": "机票对应增值税发票（部分航司提供）"
+    },
+    {
+      "id": "te-flight-itinerary",
+      "name": "hasItinerary",
+      "source": "FlightTicket",
+      "target": "AirItinerary",
+      "cardinality": "1:1",
+      "description": "机票对应航空行程单（主要报销凭证）"
+    },
+    {
+      "id": "te-hotel-invoice",
+      "name": "hotelHasInvoice",
+      "source": "HotelStay",
+      "target": "Invoice",
+      "cardinality": "1:1",
+      "description": "酒店住宿对应增值税发票"
+    },
+    {
+      "id": "te-hotel-receipt",
+      "name": "hotelHasReceipt",
+      "source": "HotelStay",
+      "target": "HotelReceipt",
+      "cardinality": "1:1",
+      "description": "酒店住宿对应结算水单（明细凭证）"
+    },
+    {
+      "id": "te-train-invoice",
+      "name": "trainHasInvoice",
+      "source": "TrainTicket",
+      "target": "Invoice",
+      "cardinality": "1:1",
+      "description": "火车票/高铁票可申请开具报销发票"
+    },
+    {
+      "id": "rel-v97hhxj",
+      "name": "worksAtBaseCity",
+      "source": "Employee",
+      "target": "City",
+      "cardinality": "N:1",
+      "description": "员工的工作基准地（Base City），即员工常驻办公城市/劳动合同履行地，用于差旅补贴标准判断（是否出差至非基准地）"
+    },
+    {
+      "id": "rel-5m9ykdl",
+      "name": "triggers",
+      "source": "Project",
+      "target": "BusinessTrip",
+      "cardinality": "1:N",
+      "description": "项目驱动出差申请，员工为完成项目任务而发起出差申请"
+    }
+  ]
+}

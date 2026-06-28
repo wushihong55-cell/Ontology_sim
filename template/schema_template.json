@@ -1,0 +1,109 @@
+{
+  "graph_schema": {
+    "version": "1.0",
+    "description": "中国城市交通枢纽及关系模型 (Neo4j)",
+    "nodes": [
+      {
+        "label": "Province",
+        "description": "省份/自治区/直辖市",
+        "properties": [
+          { "name": "name", "type": "String", "indexed": true, "constraint": "unique" },
+          { "name": "adcode", "type": "String", "constraint": "unique", "description": "行政区划代码" },
+          { "name": "shortName", "type": "String", "description": "简称, 如：粤" }
+        ]
+      },
+      {
+        "label": "City",
+        "description": "城市实体",
+        "properties": [
+          { "name": "name", "type": "String", "indexed": true, "constraint": "unique" },
+          { "name": "cityCode", "type": "String", "description": "电话区号或内部代码" },
+          { "name": "pinyin", "type": "String" },
+          { "name": "tier", "type": "String", "description": "城市等级：一线, 新一线, 二线..." },
+          { "name": "location", "type": "Point", "description": "地理坐标" }
+        ]
+      },
+      {
+        "label": "Airport",
+        "description": "民航机场",
+        "properties": [
+          { "name": "name", "type": "String", "indexed": true },
+          { "name": "iata", "type": "String", "constraint": "unique", "description": "三字码" },
+          { "name": "icao", "type": "String", "description": "四字码" },
+          { "name": "isInternational", "type": "Boolean" },
+          { "name": "location", "type": "Point" }
+        ]
+      },
+      {
+        "label": "RailwayStation",
+        "description": "火车站",
+        "properties": [
+          { "name": "name", "type": "String", "indexed": true },
+          { "name": "stationCode", "type": "String", "constraint": "unique", "description": "电报码" },
+          { "name": "isHighSpeed", "type": "Boolean" },
+          { "name": "location", "type": "Point" }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "type": "IN_PROVINCE",
+        "from": "City",
+        "to": "Province",
+        "properties": []
+      },
+      {
+        "type": "IN_CITY",
+        "from": "Airport",
+        "to": "City",
+        "properties": []
+      },
+      {
+        "type": "IN_CITY",
+        "from": "RailwayStation",
+        "to": "City",
+        "properties": []
+      },
+      {
+        "type": "FLIGHT_TO",
+        "from": "Airport",
+        "to": "Airport",
+        "description": "航线关系",
+        "properties": [
+          { "name": "distance", "type": "Float" },
+          { "name": "duration", "type": "Integer", "description": "平均飞行耗时(分钟)" }
+        ]
+      },
+      {
+        "type": "RAIL_TO",
+        "from": "RailwayStation",
+        "to": "RailwayStation",
+        "description": "铁路路径",
+        "properties": [
+          { "name": "distance", "type": "Float" },
+          { "name": "trainTypes", "type": "List<String>", "description": "G, D, T, Z, K" }
+        ]
+      },
+      {
+        "type": "TRANSFER_TO",
+        "from": "RailwayStation",
+        "to": "Airport",
+        "description": "同城换乘 (空铁联运)",
+        "properties": [
+          { "name": "time_mins", "type": "Integer" },
+          { "name": "transport_mode", "type": "String", "description": "subway, taxi, shuttle" }
+        ]
+      }
+    ],
+    "constraints": [
+      "CREATE CONSTRAINT province_adcode_unique IF NOT EXISTS FOR (n:Province) REQUIRE n.adcode IS UNIQUE",
+      "CREATE CONSTRAINT city_name_unique IF NOT EXISTS FOR (n:City) REQUIRE n.name IS UNIQUE",
+      "CREATE CONSTRAINT airport_iata_unique IF NOT EXISTS FOR (n:Airport) REQUIRE n.iata IS UNIQUE",
+      "CREATE CONSTRAINT railway_station_code_unique IF NOT EXISTS FOR (n:RailwayStation) REQUIRE n.stationCode IS UNIQUE"
+    ],
+    "indexes": [
+      "CREATE INDEX airport_name_index IF NOT EXISTS FOR (n:Airport) ON (n.name)",
+      "CREATE INDEX station_name_index IF NOT EXISTS FOR (n:RailwayStation) ON (n.name)"
+    ]
+  }
+}

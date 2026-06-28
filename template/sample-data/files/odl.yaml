@@ -1,0 +1,265 @@
+# =============================================================
+# ODL (Ontology Definition Layer) — 差旅费报销场景语义层
+# 版本: 1.0
+# 作用: 作为 LLM 与 Neo4j Schema 之间的语义垫片
+#       承载 schema.json 中没有、但LLM理解自然语言问题时必需的三类知识：
+#       1) 概念定义与同义词归一
+#       2) 业务上"合法"的查询路径模板（意图->子图）
+#       3) 显式声明的歧义消解规则与禁止路径
+# =============================================================
+
+ontology:
+  domain: 差旅费报销
+  version: "1.0"
+  schema_ref: schema.json   # 本ODL文件依赖的底层图Schema
+
+# -------------------------------------------------------------
+# 第一部分：概念字典
+# 每个概念绑定到 schema.json 中的 node label 或 relationship type，
+# 并维护业务同义词，供"自然语言 -> 概念"映射使用。
+# 这一层是单独运营维护的，不应该硬编码进LLM的prompt里。
+# -------------------------------------------------------------
+concepts:
+
+  - concept_id: expense_report
+    maps_to_node: ExpenseReport
+    display_name: 报销单
+    synonyms: ["差旅报销单", "报销单据", "报销", "单据"]
+    description: >
+      差旅费报销的根概念。一份报销单对应一次出差申请下的一次或多次费用报销。
+
+  - concept_id: trip_request
+    maps_to_node: TripRequest
+    display_name: 出差申请
+    synonyms: ["出差审批", "出差单", "审批单", "出差"]
+    description: >
+      隐式概念，源数据中未显式建模为独立对象，需从"线下预订审批描述"字段解析审批单号后还原。
+      LLM在处理"某次出差关联了哪些行程/住宿"类问题时，必须先定位到此概念，
+      不能直接在TransportSegment/Accommodation上做平铺过滤。
+
+  - concept_id: reimburser
+    maps_to_relationship: SUBMITTED_BY
+    maps_to_node: Employee
+    display_name: 报销人
+    synonyms: ["报销申请人", "提单人", "申请人"]
+    description: >
+      提交报销单的人。【重要歧义点】报销人不等于实际出行人，
+      不要将"报销人"等同于行程/住宿明细中的乘车人/旅客/住宿人。
+      参见下方 disambiguation_rules。
+
+  - concept_id: traveler
+    maps_to_relationship: TRAVELED_BY
+    maps_to_node: Employee
+    display_name: 实际出行人
+    synonyms: ["出行人", "乘车人", "旅客", "住宿人", "出差人"]
+    description: >
+      实际产生行程/住宿行为的人，对应原始数据中"乘车人""旅客""住宿人"字段。
+      可能与报销人是不同的人。
+
+  - concept_id: transport_segment
+    maps_to_node: TransportSegment
+    display_name: 交通行程
+    synonyms: ["行程", "交通", "车票", "机票", "出行记录"]
+    description: >
+      单段交通行程，包含火车/飞机/出租车等多种子类型，
+      子类型字段不同，聚合查询时只使用 reimburse_amount 字段，不使用票价/合计等中间字段。
+
+  - concept_id: accommodation
+    maps_to_node: Accommodation
+    display_name: 住宿
+    synonyms: ["酒店", "住宿记录", "入住"]
+
+  - concept_id: invoice
+    maps_to_node: Invoice
+    display_name: 发票
+    synonyms: ["票据", "发票信息"]
+
+  - concept_id: cost_allocation
+    maps_to_node: CostAllocation
+    display_name: 费用分摊
+    synonyms: ["分摊", "费用分摊主体", "分摊比例"]
+    description: >
+      【重要】查询分摊主体或统计分摊金额时，必须先过滤 is_placeholder = true 的记录，
+      源数据中"分摊主体=无,比例=0%"为占位记录，非真实业务数据。
+
+  - concept_id: reimburse_amount
+    display_name: 报销金额 / 实际支付金额
+    synonyms: ["费用", "金额", "花费", "支出", "报销额"]
+    canonical_field:
+      TransportSegment: reimburse_amount
+      Accommodation: reimburse_amount
+      ExpenseReport: total_reimburse_amount
+    description: >
+      【关键金额口径声明】当问题涉及"花了多少钱""报销金额是多少"等聚合统计时，
+      统一使用 reimburse_amount / total_reimburse_amount 字段，
+      不使用 票价、合计、价税合计、不含税金额 等字段，这些是发票/计价中间口径，不是报销口径。
+
+
+# -------------------------------------------------------------
+# 第二部分：歧义消解规则
+# 显式声明哪些路径"图上连通但业务无意义"，或哪些概念容易被LLM混淆。
+# 这是纯Schema里完全体现不出来的知识，必须在ODL层显式声明。
+# -------------------------------------------------------------
+disambiguation_rules:
+
+  - rule_id: reimburser_vs_traveler
+    description: >
+      报销人(SUBMITTED_BY)与实际出行人(TRAVELED_BY)是两个独立角色，禁止混用或互相替代查询。
+    trigger_keywords: ["报销人", "出行人", "谁出差", "谁报销", "谁去的"]
+    action: >
+      当问题包含"谁出差/谁去深圳"等指向行为发生者的措辞时，应路由到 TRAVELED_BY 关系；
+      当问题包含"谁报销/谁提交"等指向单据归属者的措辞时，应路由到 SUBMITTED_BY 关系。
+      二者结果可能不同，禁止默认两者相等。
+
+  - rule_id: company_role_disambiguation
+    description: >
+      Company 节点在不同关系中承担"报销主体公司"(FILED_BY_COMPANY)、
+      "费用分摊主体"(ALLOCATION_SUBJECT)、"发票销售方"(ISSUED_BY)、
+      "发票采购方"(PURCHASED_BY) 四种不同角色，同一公司名称可能同时承担多种角色。
+    trigger_keywords: ["公司", "主体", "销售方", "采购方", "供应商"]
+    action: >
+      生成查询前必须先确定问题指向哪一种角色关系，不能笼统地匹配 Company 节点后任意取一条边。
+      例如"差旅费支付给了哪些供应商"应路由到 ISSUED_BY，而非 FILED_BY_COMPANY。
+
+  - rule_id: amount_field_selection
+    description: >
+      同一笔行程/住宿存在多个金额字段（票价/合计/价税合计/不含税金额/实际支付金额），
+      聚合求和必须统一口径。
+    trigger_keywords: ["花费", "总额", "金额", "费用", "多少钱"]
+    action: >
+      聚合查询统一使用 reimburse_amount（对应原始'实际支付金额'字段），
+      禁止使用 票价/合计/价税合计/不含税金额 字段做求和，否则会与报销单的总报销金额对不上。
+
+  - rule_id: placeholder_allocation_filter
+    description: >
+      CostAllocation 中存在 is_placeholder=true 的占位记录（费用分摊主体="无"）。
+    trigger_keywords: ["分摊", "分摊主体", "分摊比例"]
+    action: >
+      任何涉及分摊主体统计/列举的查询，必须在 WHERE 子句中加入 is_placeholder = false 过滤，
+      否则会把"无"错误统计为一个真实分摊主体。
+
+  - rule_id: no_direct_path_department_to_invoice_seller
+    description: >
+      Department 节点和 Invoice 的销售方 Company 之间存在图上可达路径
+      (Department <- ExpenseReport -> TripRequest -> TransportSegment -> Invoice -> Company)，
+      但这条路径业务上仅用于"该部门产生的费用流向了哪些供应商"这类特定分析场景，
+      不应被默认当作"部门与供应商有业务关系"的通用语义。
+    action: >
+      若问题仅询问"某部门常用的交通/酒店供应商"，应明确告知这是基于报销记录的间接推断统计，
+      而非两者存在直接业务关系，避免LLM在回答中暗示更强的因果/业务关联。
+
+
+# -------------------------------------------------------------
+# 第三部分：意图 -> 子图查询模板
+# 将常见业务问题预先映射为带参数占位符的 Cypher 模板骨架。
+# LLM 的任务被收窄为"识别意图 + 填充参数"，而不是从零生成完整Cypher，
+# 模板本身保证了路径方向和聚合口径的正确性。
+# -------------------------------------------------------------
+query_templates:
+
+  - intent_id: employee_monthly_total_expense
+    description: 某员工某月的差旅报销总额
+    example_questions:
+      - "王晓玥这个月报销了多少差旅费"
+      - "某员工本月差旅费总额"
+    parameters:
+      - name: employee_name
+        maps_to: Employee.employee_name
+      - name: year_month
+        maps_to: ExpenseReport.关联TripRequest.start_date
+    cypher_template: >
+      MATCH (e:Employee {employee_name: $employee_name})<-[:SUBMITTED_BY]-(r:ExpenseReport)
+      -[:BASED_ON_TRIP]->(t:TripRequest)
+      WHERE t.start_date >= date($year_month + '-01')
+        AND t.start_date < date($year_month + '-01') + duration({months: 1})
+      RETURN sum(r.total_reimburse_amount) AS total_amount
+    notes: 使用 ExpenseReport.total_reimburse_amount，不下钻到TransportSegment/Accommodation重复累加。
+
+  - intent_id: department_over_budget
+    description: 某部门超预算的出差申请（需配合预算节点，当前schema未包含Budget节点，标注为待扩展）
+    status: pending_schema_extension
+    notes: >
+      当前schema未建模Budget节点，此类问题暂不可回答。
+      若后续需支持，须在schema.json中新增Budget节点及与Department的时间区间对齐关系，
+      不能直接在现有结构上拼凑近似答案。
+
+  - intent_id: approval_chain_trips
+    description: 某次出差审批关联的所有行程与住宿
+    example_questions:
+      - "审批单SP20260227001都报了哪些行程"
+      - "这次出差住了哪家酒店、坐了什么交通工具"
+    parameters:
+      - name: approval_no
+        maps_to: TripRequest.approval_no
+    cypher_template: >
+      MATCH (t:TripRequest {approval_no: $approval_no})
+      OPTIONAL MATCH (t)-[:INCLUDES_SEGMENT]->(seg:TransportSegment)
+      OPTIONAL MATCH (t)-[:INCLUDES_ACCOMMODATION]->(acc:Accommodation)
+      RETURN t, collect(DISTINCT seg) AS segments, collect(DISTINCT acc) AS accommodations
+
+  - intent_id: traveler_vs_reimburser_mismatch
+    description: 找出报销人与实际出行人不一致的报销单（数据质量/合规核查类场景）
+    example_questions:
+      - "哪些报销单的报销人和实际出行人不是同一个人"
+    cypher_template: >
+      MATCH (r:ExpenseReport)-[:SUBMITTED_BY]->(submitter:Employee)
+      MATCH (r)-[:BASED_ON_TRIP]->(t:TripRequest)-[:TRAVELED_BY]->(traveler:Employee)
+      WHERE submitter.employee_id <> traveler.employee_id
+      RETURN r.report_id, submitter.employee_name AS 报销人, traveler.employee_name AS 实际出行人
+
+  - intent_id: real_allocation_subjects
+    description: 列出某报销单的真实费用分摊主体（已过滤占位记录）
+    parameters:
+      - name: report_id
+        maps_to: ExpenseReport.report_id
+    cypher_template: >
+      MATCH (r:ExpenseReport {report_id: $report_id})-[:ALLOCATED_TO]->(ca:CostAllocation)
+      WHERE ca.is_placeholder = false
+      OPTIONAL MATCH (ca)-[:ALLOCATION_SUBJECT]->(c:Company)
+      RETURN c.company_name AS 分摊主体, ca.allocation_ratio AS 比例, ca.allocation_amount AS 金额
+
+  - intent_id: supplier_spend_by_category
+    description: 按交通方式或住宿统计向各供应商（发票销售方）的支出
+    example_questions:
+      - "差旅费里给滴滴出行付了多少钱"
+      - "酒店住宿支出最多的供应商是谁"
+    cypher_template: >
+      MATCH (seg:TransportSegment)-[:HAS_INVOICE]->(inv:Invoice)-[:ISSUED_BY]->(seller:Company)
+      RETURN seller.company_name AS 供应商, sum(seg.reimburse_amount) AS 总支出
+      ORDER BY 总支出 DESC
+    notes: 同样的模板可替换 TransportSegment 为 Accommodation 用于酒店供应商统计，两者不要合并成一条UNION查询，保持语义清晰。
+
+
+# -------------------------------------------------------------
+# 第四部分：数据质量与占位值规则
+# 供数据导入/校验阶段和LLM结果后处理阶段共同使用
+# -------------------------------------------------------------
+data_quality_rules:
+
+  - field_pattern: "无"
+    applies_to:
+      - TripRequest.via_cities
+      - CostAllocation相关的费用分摊主体原始字段
+    treatment: 视为空值/不存在，不作为真实业务值参与统计或展示
+
+  - field_pattern: "0%"
+    applies_to:
+      - CostAllocation.allocation_ratio
+    treatment: 当分摊比例为0%时，对应记录应设置 is_placeholder = true，不计入分摊主体计数
+
+  - validation: report_amount_consistency
+    description: >
+      ExpenseReport.total_reimburse_amount 应等于
+      CostAllocation中is_placeholder=false记录的allocation_amount之和，
+      也应等于Payment.payment_amount。
+    action_on_mismatch: 标记数据异常，提示人工核对，不由LLM自动"修正"或忽略差异
+
+
+# -------------------------------------------------------------
+# 第五部分：已知未决问题（与schema.json的known_design_risks对应）
+# 显式标注哪些问题尚未有定论，提示LLM/开发者不要假定已有标准答案
+# -------------------------------------------------------------
+open_questions:
+  - 占位分摊记录(is_placeholder=true)是否应该物理入图，目前默认入图但标记，待业务方确认
+  - approval_no 目前依赖自由文本解析，源系统是否能改为结构化输出待确认
+  - Employee节点唯一性目前依赖姓名，存在同名冲突风险，待补充工号体系后修订本ODL中相关parameters的匹配方式

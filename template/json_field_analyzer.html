@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>JSON 字段值统计分析</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg:      #0f1117;
+  --bg2:     #181c24;
+  --bg3:     #1e2330;
+  --border:  #2a3040;
+  --border2: #374050;
+  --text:    #e4e8f0;
+  --text2:   #9aa5b8;
+  --text3:   #5a6580;
+  --accent:  #3b82f6;
+  --accent2: #2563eb;
+  --green:   #22c55e;
+  --purple:  #a78bfa;
+  --r:       8px;
+}
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  background: var(--bg); color: var(--text); min-height: 100vh;
+  display: flex; flex-direction: column;
+}
+
+/* header */
+header {
+  background: var(--bg2); border-bottom: 1px solid var(--border);
+  padding: 13px 24px; display: flex; align-items: center; gap: 12px;
+}
+header h1 { font-size: 16px; font-weight: 600; }
+header p  { font-size: 12px; color: var(--text3); }
+
+/* layout */
+.layout { display: flex; flex: 1; overflow: hidden; height: calc(100vh - 50px); }
+
+/* sidebar */
+.sidebar {
+  width: 305px; min-width: 260px; background: var(--bg2);
+  border-right: 1px solid var(--border);
+  display: flex; flex-direction: column; overflow: hidden;
+}
+.sb-sec { padding: 14px 16px; border-bottom: 1px solid var(--border); flex-shrink: 0; }
+.sb-sec h2 {
+  font-size: 10.5px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: .09em; color: var(--text3); margin-bottom: 10px;
+}
+
+/* drop zone */
+.drop-zone {
+  border: 2px dashed var(--border2); border-radius: var(--r);
+  padding: 18px; text-align: center; cursor: pointer;
+  transition: border-color .18s, background .18s;
+}
+.drop-zone:hover, .drop-zone.over { border-color: var(--accent); background: rgba(59,130,246,.06); }
+.drop-zone .ico { font-size: 26px; margin-bottom: 6px; }
+.drop-zone p { font-size: 12px; color: var(--text2); line-height: 1.5; }
+#folderInput { display: none; }
+
+.loaded-badge {
+  display: flex; align-items: center; gap: 8px;
+  background: var(--bg3); border-radius: var(--r);
+  padding: 8px 12px; font-size: 12px; margin-top: 10px;
+}
+.loaded-badge .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green); }
+.loaded-badge .info { color: var(--text2); }
+.loaded-badge .info strong { color: var(--text); }
+
+/* field controls */
+.ctrl-row { display: flex; gap: 6px; margin-bottom: 8px; flex-wrap: wrap; align-items: center; }
+.btn {
+  font-size: 11px; padding: 4px 10px; border-radius: 5px;
+  border: 1px solid var(--border2); background: var(--bg3);
+  color: var(--text2); cursor: pointer; transition: background .13s, color .13s;
+}
+.btn:hover { background: var(--border2); color: var(--text); }
+.btn.accent { background: var(--accent); color: #fff; border-color: var(--accent); }
+.btn.accent:hover { background: var(--accent2); }
+.btn:disabled { opacity: .45; cursor: not-allowed; }
+
+.search {
+  width: 100%; padding: 6px 10px; font-size: 12px;
+  background: var(--bg3); border: 1px solid var(--border2);
+  border-radius: 6px; color: var(--text); outline: none; margin-bottom: 7px;
+}
+.search:focus { border-color: var(--accent); }
+.search::placeholder { color: var(--text3); }
+
+.pills { display: flex; gap: 6px; }
+.pill {
+  font-size: 10px; padding: 2px 9px; border-radius: 10px; cursor: pointer;
+  border: 1px solid var(--border2); color: var(--text3); background: none;
+  transition: all .14s;
+}
+.pill.on       { border-color: var(--accent);  color: var(--accent);  background: rgba(59,130,246,.1); }
+.pill.on-arr   { border-color: var(--purple);  color: var(--purple);  background: rgba(167,139,250,.1); }
+
+/* field list */
+.field-list { flex: 1; overflow-y: auto; padding: 2px 14px 12px; }
+.group-label {
+  font-size: 10px; font-weight: 700; color: var(--text3);
+  text-transform: uppercase; letter-spacing: .06em;
+  padding: 9px 4px 4px; border-top: 1px solid var(--border); margin-top: 4px;
+}
+.group-label:first-child { border-top: none; margin-top: 0; padding-top: 4px; }
+
+.fi {
+  display: flex; align-items: center; gap: 7px;
+  padding: 4px 6px; border-radius: 6px; cursor: pointer; transition: background .12s;
+}
+.fi:hover { background: var(--bg3); }
+.fi input  { accent-color: var(--accent); width: 13px; height: 13px; flex-shrink: 0; cursor: pointer; }
+.fi label  {
+  font-size: 11.5px; color: var(--text2); cursor: pointer;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1;
+  font-family: 'SF Mono', 'Fira Code', Consolas, monospace;
+}
+.fi .arr-badge {
+  display: inline-block; font-size: 9px; padding: 1px 5px; border-radius: 8px;
+  background: rgba(167,139,250,.12); color: var(--purple);
+  border: 1px solid rgba(167,139,250,.25); margin-left: 4px;
+  font-family: sans-serif; vertical-align: middle;
+}
+.fi .fcnt { font-size: 10px; color: var(--text3); flex-shrink: 0; }
+.fi.hide { display: none; }
+
+/* main content */
+.content { flex: 1; overflow-y: auto; padding: 20px 24px; }
+.empty {
+  display: flex; flex-direction: column; align-items: center;
+  justify-content: center; height: 100%; color: var(--text3); text-align: center; gap: 10px;
+}
+.empty .ico { font-size: 46px; opacity: .35; }
+.empty p    { font-size: 14px; }
+
+.toolbar {
+  display: flex; align-items: center; gap: 10px; margin-bottom: 16px; flex-wrap: wrap;
+}
+.toolbar h2 { font-size: 14px; font-weight: 600; flex: 1; }
+.sort-sel {
+  font-size: 12px; padding: 5px 10px; border-radius: 6px;
+  background: var(--bg3); border: 1px solid var(--border2);
+  color: var(--text); outline: none; cursor: pointer;
+}
+.export-btn {
+  font-size: 12px; padding: 7px 16px; border-radius: 6px;
+  background: var(--accent); color: #fff; border: none; cursor: pointer;
+  font-weight: 500;
+}
+.export-btn:hover { background: var(--accent2); }
+
+/* result cards */
+.result-grid { display: flex; flex-direction: column; gap: 14px; }
+
+.card { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--r); overflow: hidden; }
+.card.arr-card { border-color: rgba(167,139,250,.32); }
+
+.card-hd {
+  display: flex; align-items: center; gap: 10px;
+  padding: 11px 16px; background: var(--bg3); border-bottom: 1px solid var(--border);
+  cursor: pointer; user-select: none;
+}
+.arr-card .card-hd { background: rgba(167,139,250,.06); }
+.card-hd:hover { filter: brightness(1.08); }
+
+.card-title {
+  flex: 1; font-size: 13px; font-weight: 600; color: var(--text);
+  font-family: 'SF Mono', 'Fira Code', Consolas, monospace;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.arr-tag {
+  display: inline-block; font-size: 9.5px; padding: 1px 7px; border-radius: 9px;
+  background: rgba(167,139,250,.12); color: var(--purple);
+  border: 1px solid rgba(167,139,250,.3); margin-left: 8px;
+  font-family: sans-serif; vertical-align: middle; font-weight: 500;
+}
+.card-meta { font-size: 11px; color: var(--text3); white-space: nowrap; flex-shrink: 0; }
+.card-caret { font-size: 11px; color: var(--text3); transition: transform .18s; flex-shrink: 0; }
+.card.collapsed .card-caret { transform: rotate(-90deg); }
+
+.card-bd { padding: 10px 16px; display: flex; flex-direction: column; gap: 3px; }
+.card.collapsed .card-bd { display: none; }
+
+/* value rows */
+.vrow { display: flex; align-items: center; gap: 8px; }
+.vbar-wrap { flex: 1; position: relative; height: 20px; }
+.vbar {
+  position: absolute; left: 0; top: 4px; height: 12px; border-radius: 3px;
+  background: var(--accent); opacity: .65; min-width: 2px;
+}
+.arr-card .vbar { background: var(--purple); }
+.vtext {
+  position: absolute; left: 0; top: 0; right: 0; bottom: 0;
+  display: flex; align-items: center; font-size: 11.5px; color: var(--text2);
+  padding-left: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.empty-val { font-style: italic; color: var(--text3) !important; }
+.vcnt { font-size: 12px; color: var(--text);  width: 38px; text-align: right; flex-shrink: 0; }
+.vpct { font-size: 11px; color: var(--text3); width: 44px; text-align: right; flex-shrink: 0; }
+
+.more-btn {
+  font-size: 11px; color: var(--accent); background: none; border: none;
+  cursor: pointer; padding: 5px 0; text-align: left; margin-top: 3px;
+}
+.more-btn:hover { text-decoration: underline; }
+
+/* progress overlay */
+#prog-wrap {
+  position: fixed; inset: 0; background: rgba(0,0,0,.65);
+  display: flex; align-items: center; justify-content: center; z-index: 200;
+}
+#prog-wrap.hide { display: none; }
+.prog-box {
+  background: var(--bg2); border: 1px solid var(--border); border-radius: 12px;
+  padding: 28px 36px; text-align: center; min-width: 300px;
+}
+.prog-box h3 { font-size: 14px; margin-bottom: 14px; }
+.prog-track  { width: 100%; height: 6px; background: var(--border2); border-radius: 3px; overflow: hidden; margin-bottom: 10px; }
+.prog-fill   { height: 100%; background: var(--accent); border-radius: 3px; width: 0%; transition: width .1s; }
+.prog-txt    { font-size: 12px; color: var(--text3); }
+
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>📊 JSON 字段值统计分析</h1>
+  <p>支持嵌套对象 &amp; 对象数组展开（[*]）· 选择文件夹 → 勾选字段 → 运行统计</p>
+</header>
+
+<div class="layout">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sb-sec">
+      <h2>① 选择文件夹</h2>
+      <div id="dropZone" class="drop-zone">
+        <div class="ico">📁</div>
+        <p><strong>点击选择文件夹</strong><br>或将文件夹拖放于此</p>
+      </div>
+      <input type="file" id="folderInput" webkitdirectory multiple>
+      <div id="loadedBadge" class="loaded-badge" style="display:none">
+        <div class="dot"></div>
+        <div class="info">已加载 <strong id="fileCount">0</strong> 个 JSON 文件</div>
+      </div>
+    </div>
+
+    <div class="sb-sec" style="padding-bottom:9px">
+      <h2>② 选择分析字段</h2>
+      <div class="ctrl-row">
+        <button class="btn" id="btnSelAll">全选</button>
+        <button class="btn" id="btnSelNone">清空</button>
+        <button class="btn" id="btnSelArr">选数组</button>
+        <button class="btn accent" id="btnRun" disabled style="margin-left:auto">▶ 运行</button>
+      </div>
+      <input class="search" id="fieldSearch" placeholder="搜索字段名…">
+      <div class="pills">
+        <button class="pill on"  id="pillAll">全部</button>
+        <button class="pill"     id="pillFlat">普通</button>
+        <button class="pill"     id="pillArr">数组 [*]</button>
+      </div>
+    </div>
+
+    <div class="field-list" id="fieldList">
+      <p style="font-size:12px;color:var(--text3);padding:8px 4px">请先选择文件夹</p>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <main class="content">
+    <div class="empty" id="emptyState">
+      <div class="ico">📂</div>
+      <p>请先在左侧选择包含 JSON 文件的文件夹</p>
+    </div>
+    <div id="resultArea" style="display:none">
+      <div class="toolbar">
+        <h2 id="resultTitle">统计结果</h2>
+        <span style="font-size:11px;color:var(--text3)">排序</span>
+        <select class="sort-sel" id="sortSel">
+          <option value="cnt-desc">频次 高→低</option>
+          <option value="cnt-asc">频次 低→高</option>
+          <option value="alpha">字母序</option>
+        </select>
+        <button class="export-btn" id="btnExport">⬇ 导出 CSV</button>
+      </div>
+      <div class="result-grid" id="resultGrid"></div>
+    </div>
+  </main>
+</div>
+
+<!-- Progress -->
+<div id="prog-wrap" class="hide">
+  <div class="prog-box">
+    <h3>正在处理…</h3>
+    <div class="prog-track"><div class="prog-fill" id="progFill"></div></div>
+    <div class="prog-txt" id="progTxt"></div>
+  </div>
+</div>
+
+<script>
+'use strict'
+// ─────────────────────────────────────────────────────────────────────────────
+// State
+// ─────────────────────────────────────────────────────────────────────────────
+let allFiles = []
+// allFields: Map<fieldPath, { fileCount, isArr }>
+const allFields = new Map()
+// analysis results — set after runAnalysis()
+// results: Map<fieldPath, Map<value, count>>
+const results        = new Map()
+const fileCountMap   = new Map()   // fieldPath → #files where field present
+const valueTotalMap  = new Map()   // fieldPath → sum of all value occurrences (>= fileCount for arr fields)
+
+let typeFilter = 'all'    // 'all' | 'flat' | 'arr'
+let sortMode   = 'cnt-desc'
+const SHOW_N   = 15       // default rows per card before "show more"
+
+// Per-card data for "show all" button (keyed by numeric index)
+const cardData = []  // [{field, entries, max, total}]
+
+// ─────────────────────────────────────────────────────────────────────────────
+// JSON flattening — handles nested objects AND arrays of objects
+// Returns Map<path, string[]>  (multiple values per path from array elements)
+// ─────────────────────────────────────────────────────────────────────────────
+function flatten(obj, prefix, out) {
+  out = out || new Map()
+  if (obj == null || typeof obj !== 'object' || Array.isArray(obj)) return out
+  for (const [k, v] of Object.entries(obj)) {
+    const path = prefix ? prefix + '.' + k : k
+    if (Array.isArray(v)) {
+      const objItems = v.filter(x => x !== null && typeof x === 'object' && !Array.isArray(x))
+      if (objItems.length > 0) {
+        for (const item of objItems) flattenArr(item, path + '[*]', out)
+      }
+      // primitive/empty arrays → skip
+    } else if (v !== null && typeof v === 'object') {
+      flatten(v, path, out)
+    } else {
+      push(out, path, v != null ? String(v) : '')
+    }
+  }
+  return out
+}
+
+function flattenArr(obj, prefix, out) {
+  if (obj == null || typeof obj !== 'object' || Array.isArray(obj)) return
+  for (const [k, v] of Object.entries(obj)) {
+    const path = prefix + '.' + k
+    if (Array.isArray(v)) {
+      const objItems = v.filter(x => x !== null && typeof x === 'object' && !Array.isArray(x))
+      if (objItems.length > 0) {
+        for (const item of objItems) flattenArr(item, path + '[*]', out)
+      }
+    } else if (v !== null && typeof v === 'object') {
+      flattenArr(v, path, out)
+    } else {
+      push(out, path, v != null ? String(v) : '')
+    }
+  }
+}
+
+function push(map, key, val) {
+  if (!map.has(key)) map.set(key, [])
+  map.get(key).push(val)
+}
+
+const isArrField = path => path.includes('[*]')
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Load files + discover fields
+// ─────────────────────────────────────────────────────────────────────────────
+async function loadFiles(files) {
+  allFiles = files
+  document.getElementById('fileCount').textContent = files.length
+  document.getElementById('loadedBadge').style.display = 'flex'
+
+  showProg(true)
+  allFields.clear()
+  const sample = files.length > 300 ? files.slice(0, 300) : files
+
+  for (let i = 0; i < sample.length; i++) {
+    try {
+      const flat = flatten(JSON.parse(await sample[i].text()))
+      flat.forEach((_, path) => {
+        if (!allFields.has(path)) allFields.set(path, { fileCount: 0, isArr: isArrField(path) })
+        allFields.get(path).fileCount++
+      })
+    } catch { /* skip bad file */ }
+    if (i % 30 === 0) { setProg(i / sample.length * 100, `扫描字段 ${i+1} / ${sample.length}`); await tick() }
+  }
+
+  showProg(false)
+  renderFieldList()
+  document.getElementById('btnRun').disabled = false
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Field list rendering
+// ─────────────────────────────────────────────────────────────────────────────
+function renderFieldList() {
+  const el = document.getElementById('fieldList')
+  el.innerHTML = ''
+
+  const flatFields = [], arrFields = []
+  allFields.forEach((info, path) => (info.isArr ? arrFields : flatFields).push([path, info]))
+  flatFields.sort((a,b) => b[1].fileCount - a[1].fileCount)
+  arrFields.sort((a,b) => b[1].fileCount - a[1].fileCount)
+
+  if (flatFields.length) {
+    el.insertAdjacentHTML('beforeend', `<div class="group-label">普通字段 (${flatFields.length})</div>`)
+    flatFields.forEach(([p, info]) => el.appendChild(makeFieldItem(p, info)))
+  }
+  if (arrFields.length) {
+    el.insertAdjacentHTML('beforeend', `<div class="group-label">数组子字段 [*] (${arrFields.length})</div>`)
+    arrFields.forEach(([p, info]) => el.appendChild(makeFieldItem(p, info)))
+  }
+
+  applyFilters()
+}
+
+function makeFieldItem(path, info) {
+  const div = document.createElement('div')
+  div.className = 'fi'
+  div.dataset.path = path
+  div.dataset.arr  = info.isArr ? '1' : '0'
+
+  const cb = document.createElement('input')
+  cb.type = 'checkbox'; cb.value = path
+  cb.id = 'cb_' + Math.random().toString(36).slice(2)
+
+  const lbl = document.createElement('label')
+  lbl.htmlFor = cb.id
+  const display = path.replace(/\[\*\]/g, '')
+  lbl.textContent = display
+  if (info.isArr) {
+    const span = document.createElement('span')
+    span.className = 'arr-badge'; span.textContent = '[*]'
+    lbl.appendChild(span)
+  }
+
+  const cnt = document.createElement('span')
+  cnt.className = 'fcnt'; cnt.textContent = info.fileCount
+
+  div.appendChild(cb); div.appendChild(lbl); div.appendChild(cnt)
+  div.addEventListener('click', e => { if (e.target !== cb) cb.checked = !cb.checked })
+  return div
+}
+
+function getCheckedPaths() {
+  return [...document.querySelectorAll('.fi input:checked')].map(cb => cb.value)
+}
+
+function applyFilters() {
+  const q    = document.getElementById('fieldSearch').value.toLowerCase()
+  const type = typeFilter
+  document.querySelectorAll('.fi').forEach(fi => {
+    const path  = fi.dataset.path.toLowerCase()
+    const isArr = fi.dataset.arr === '1'
+    const matchQ = !q || path.includes(q)
+    const matchT = type === 'all' || (type === 'arr' ? isArr : !isArr)
+    fi.classList.toggle('hide', !(matchQ && matchT))
+  })
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Analysis
+// ─────────────────────────────────────────────────────────────────────────────
+async function runAnalysis() {
+  const fields = getCheckedPaths()
+  if (!fields.length) { alert('请至少勾选一个字段'); return }
+
+  results.clear(); fileCountMap.clear(); valueTotalMap.clear()
+  fields.forEach(f => { results.set(f, new Map()); fileCountMap.set(f, 0); valueTotalMap.set(f, 0) })
+
+  showProg(true)
+  const total = allFiles.length
+
+  for (let i = 0; i < total; i++) {
+    try {
+      const flat = flatten(JSON.parse(await allFiles[i].text()))
+      for (const field of fields) {
+        const vals = flat.get(field)
+        if (vals && vals.length > 0) {
+          fileCountMap.set(field, fileCountMap.get(field) + 1)
+          const counter = results.get(field)
+          for (const rawVal of vals) {
+            const v = rawVal.trim()
+            counter.set(v, (counter.get(v) || 0) + 1)
+            valueTotalMap.set(field, valueTotalMap.get(field) + 1)
+          }
+        }
+      }
+    } catch { /* skip */ }
+    if (i % 50 === 0) { setProg(i / total * 100, `分析 ${i+1} / ${total}`); await tick() }
+  }
+
+  showProg(false)
+  document.getElementById('emptyState').style.display  = 'none'
+  document.getElementById('resultArea').style.display   = 'block'
+  document.getElementById('resultTitle').textContent =
+    `统计结果 · ${total} 个文件 · ${fields.length} 个字段`
+  rerender()
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Render results
+// ─────────────────────────────────────────────────────────────────────────────
+function rerender() {
+  sortMode = document.getElementById('sortSel').value
+  const grid = document.getElementById('resultGrid')
+  grid.innerHTML = ''
+  cardData.length = 0
+
+  results.forEach((counter, field) => {
+    const isArr  = isArrField(field)
+    const fCount = fileCountMap.get(field)
+    const vTotal = valueTotalMap.get(field)
+    const dispTotal = isArr ? vTotal : fCount
+
+    const entries = [...counter.entries()]
+    sortEntries(entries)
+
+    const max = entries.reduce((m, [,c]) => Math.max(m,c), 0)
+    const idx = cardData.length
+    cardData.push({ field, entries, max, dispTotal, isArr })
+
+    const meta = isArr
+      ? `${entries.length} 种值 · ${vTotal} 条记录 · 来自 ${fCount} 个文件`
+      : `${entries.length} 种值 · ${fCount} 个文件`
+
+    const displayField = field.replace(/\[\*\]/g, '')
+    const card = document.createElement('div')
+    card.className = 'card' + (isArr ? ' arr-card' : '')
+    card.dataset.idx = idx
+
+    // header
+    const hd = document.createElement('div'); hd.className = 'card-hd'
+    hd.innerHTML = `
+      <div class="card-title">${esc(displayField)}${isArr ? '<span class="arr-tag">数组 [*]</span>' : ''}</div>
+      <div class="card-meta">${esc(meta)}</div>
+      <div class="card-caret">▼</div>
+    `
+    hd.addEventListener('click', () => card.classList.toggle('collapsed'))
+
+    // body
+    const bd = document.createElement('div'); bd.className = 'card-bd'
+    bd.innerHTML = buildRows(entries.slice(0, SHOW_N), max, dispTotal, isArr)
+
+    if (entries.length > SHOW_N) {
+      const moreBtn = document.createElement('button')
+      moreBtn.className = 'more-btn'
+      moreBtn.textContent = `展开全部 ${entries.length} 个值 ▾`
+      moreBtn.dataset.idx = idx
+      moreBtn.addEventListener('click', function() {
+        const d = cardData[+this.dataset.idx]
+        this.parentElement.innerHTML = buildRows(d.entries, d.max, d.dispTotal, d.isArr)
+      })
+      bd.appendChild(moreBtn)
+    }
+
+    card.appendChild(hd); card.appendChild(bd)
+    grid.appendChild(card)
+  })
+}
+
+function sortEntries(entries) {
+  if (sortMode === 'cnt-desc') entries.sort((a,b) => b[1]-a[1])
+  else if (sortMode === 'cnt-asc') entries.sort((a,b) => a[1]-b[1])
+  else entries.sort((a,b) => a[0].localeCompare(b[0], 'zh-CN'))
+}
+
+function buildRows(entries, max, total, isArr) {
+  return entries.map(([val, cnt]) => {
+    const barW  = max > 0 ? (cnt / max * 100).toFixed(0) : 0
+    const pct   = total > 0 ? (cnt / total * 100).toFixed(1) : '0.0'
+    const isEmp = val === ''
+    const disp  = isEmp ? '（空值）' : val
+    return `<div class="vrow">
+      <div class="vbar-wrap">
+        <div class="vbar" style="width:${barW}%"></div>
+        <div class="vtext${isEmp ? ' empty-val' : ''}" title="${esc(val)}">${esc(disp)}</div>
+      </div>
+      <div class="vcnt">${cnt}</div>
+      <div class="vpct">${pct}%</div>
+    </div>`
+  }).join('')
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Export CSV
+// ─────────────────────────────────────────────────────────────────────────────
+function exportCSV() {
+  const lines = ['﻿字段路径,是否数组字段,值,出现次数,涉及文件数,占比(%)']
+  results.forEach((counter, field) => {
+    const isArr  = isArrField(field)
+    const fCount = fileCountMap.get(field)
+    const vTotal = valueTotalMap.get(field)
+    const total  = isArr ? vTotal : fCount
+    const entries = [...counter.entries()]
+    sortEntries(entries)
+    for (const [val, cnt] of entries) {
+      const pct = total > 0 ? (cnt/total*100).toFixed(1) : '0.0'
+      lines.push([field, isArr?'是':'否', val, cnt, fCount, pct]
+        .map(v => '"' + String(v).replace(/"/g, '""') + '"').join(','))
+    }
+  })
+  const blob = new Blob([lines.join('\n')], { type: 'text/csv;charset=utf-8' })
+  const a = document.createElement('a')
+  a.href = URL.createObjectURL(blob)
+  a.download = 'json_field_stats_' + new Date().toISOString().slice(0,10) + '.csv'
+  a.click()
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Progress
+// ─────────────────────────────────────────────────────────────────────────────
+function showProg(on) { document.getElementById('prog-wrap').classList.toggle('hide', !on) }
+function setProg(pct, txt) {
+  document.getElementById('progFill').style.width = Math.min(pct, 100) + '%'
+  document.getElementById('progTxt').textContent  = txt
+}
+function tick() { return new Promise(r => setTimeout(r, 0)) }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Helpers
+// ─────────────────────────────────────────────────────────────────────────────
+function esc(s) {
+  return String(s)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Wire up events
+// ─────────────────────────────────────────────────────────────────────────────
+document.getElementById('dropZone').addEventListener('click', () =>
+  document.getElementById('folderInput').click())
+
+document.getElementById('folderInput').addEventListener('change', async e => {
+  const files = [...e.target.files].filter(f => f.name.toLowerCase().endsWith('.json'))
+  e.target.value = ''
+  if (files.length) await loadFiles(files)
+})
+
+const dz = document.getElementById('dropZone')
+dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('over') })
+dz.addEventListener('dragleave', () => dz.classList.remove('over'))
+dz.addEventListener('drop', async e => {
+  e.preventDefault(); dz.classList.remove('over')
+  const list = []
+  async function walk(entry) {
+    if (entry.isFile) {
+      await new Promise(r => entry.file(f => { if (f.name.toLowerCase().endsWith('.json')) list.push(f); r() }))
+    } else if (entry.isDirectory) {
+      const reader = entry.createReader()
+      await new Promise(r => reader.readEntries(async es => { for (const e of es) await walk(e); r() }))
+    }
+  }
+  for (const item of e.dataTransfer.items) {
+    const entry = item.webkitGetAsEntry?.()
+    if (entry) await walk(entry)
+  }
+  if (list.length) await loadFiles(list)
+})
+
+document.getElementById('btnRun').addEventListener('click', runAnalysis)
+document.getElementById('btnExport').addEventListener('click', exportCSV)
+document.getElementById('sortSel').addEventListener('change', () => { if (results.size) rerender() })
+
+document.getElementById('btnSelAll').addEventListener('click', () =>
+  document.querySelectorAll('.fi:not(.hide) input').forEach(cb => cb.checked = true))
+document.getElementById('btnSelNone').addEventListener('click', () =>
+  document.querySelectorAll('.fi input').forEach(cb => cb.checked = false))
+document.getElementById('btnSelArr').addEventListener('click', () =>
+  document.querySelectorAll('.fi:not(.hide) input').forEach(cb => {
+    cb.checked = cb.closest('.fi').dataset.arr === '1'
+  }))
+
+document.getElementById('fieldSearch').addEventListener('input', applyFilters)
+
+document.getElementById('pillAll').addEventListener('click', () => setType('all'))
+document.getElementById('pillFlat').addEventListener('click', () => setType('flat'))
+document.getElementById('pillArr').addEventListener('click', () => setType('arr'))
+
+function setType(t) {
+  typeFilter = t
+  document.querySelectorAll('.pill').forEach(p => p.classList.remove('on', 'on-arr'))
+  const ids = { all: 'pillAll', flat: 'pillFlat', arr: 'pillArr' }
+  document.getElementById(ids[t]).classList.add(t === 'arr' ? 'on-arr' : 'on')
+  applyFilters()
+}
+</script>
+</body>
+</html>
