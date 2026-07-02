@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState, Component } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 import { createPortal } from 'react-dom'
 import type { ReactNode, ErrorInfo } from 'react'
 import {
@@ -81,12 +82,12 @@ import {
 } from 'lucide-react'
 import { useSchemaStore, makeId, buildSchemaContext, validateSchema } from './store'
 import { parseExcelSchema, parseJsonSchema, buildNodesEdges, mergeNodesEdges, generateTemplateXlsx, exportSchemaAsXlsx, type ImportResult } from './lib/schemaImporter'
-import type { EntityNode, RelationEdge, EntityProperty, PropertyType, PropertyConstraints, AiProvider, AiServiceConfig, EdgeStyle, EntityType, RelationCategoryId, OntologyModel, InstanceDataset, ColumnMapping, SkillId, PatchItem, OdlPatchItem, BizTwin, Neo4jNodeRecord, Neo4jRelRecord, Skill, FactoryTab, GenProgressEvent } from './types'
+import type { EntityNode, RelationEdge, EntityProperty, PropertyType, PropertyConstraints, AiProvider, AiServiceConfig, EdgeStyle, EntityType, RelationCategoryId, OntologyModel, InstanceDataset, InstanceRecord, InstanceFieldValue, ColumnMapping, SkillId, PatchItem, OdlPatchItem, BizTwin, Neo4jNodeRecord, Neo4jRelRecord, Skill, FactoryTab, GenProgressEvent } from './types'
 import { useSkills, useToggleSkill, useSaveSkill, useDeleteSkill, useImportSkill } from './hooks/useSkills'
 import { api } from './lib/api'
 import { parseCSV, parseJSON, flattenJsonDocument, extractArrayRows, smartMapFieldsMultiEntity, type FolderFieldMapping } from './lib/csvParser'
 import { buildInstanceRecords } from './lib/instanceValidator'
-import { generateCypher, downloadCypher } from './lib/cypherExporter'
+import { generateCypher, downloadCypher, exportTwinAsExcel } from './lib/cypherExporter'
 import { SKILL_DEFINITIONS, SKILL_ORDER } from './lib/skills'
 import './App.css'
 
@@ -374,18 +375,61 @@ function MiniMapGlobeNode({ x, y, width, height, color, selected }: MiniMapNodeP
 /* ─── Relation Edge ──────────────────────────────────────────────────────── */
 
 function RelationEdgeView(props: EdgeProps<RelationEdge>) {
-  const { sourceX, sourceY, sourcePosition, targetX, targetY, targetPosition } = props
+  const { sourceX, sourceY, sourcePosition, targetX, targetY, targetPosition, selected } = props
   const edgeStyle = props.data?.edgeStyle ?? 'bezier'
-  const setSelected = useSchemaStore((s) => s.setSelected)
+  const setSelected  = useSchemaStore((s) => s.setSelected)
+  const updateRelation = useSchemaStore((s) => s.updateRelation)
+  const { screenToFlowPosition } = useReactFlow()
+  const [localMid, setLocalMid] = useState<{ x: number; y: number } | null>(null)
 
-  const color = getRelationColor(props.data?.relationCategory, props.data?.name)
+  const color    = getRelationColor(props.data?.relationCategory, props.data?.name)
   const markerId = `rel-arrow-${props.id}`
 
-  const pathArgs = { sourceX, sourceY, sourcePosition, targetX, targetY, targetPosition }
-  const [d, labelX, labelY] =
-    edgeStyle === 'straight' ? getStraightPath({ sourceX, sourceY, targetX, targetY }) :
-    edgeStyle === 'step'     ? getSmoothStepPath(pathArgs) :
-                               getBezierPath(pathArgs)
+  // localMid is set during live drag; data.midpoint is the persisted value
+  const midpoint = localMid ?? props.data?.midpoint ?? null
+
+  let edgePath: string
+  let labelX: number
+  let labelY: number
+
+  if (midpoint) {
+    // quadratic bezier that passes through the user-chosen midpoint at t=0.5
+    const cx = 2 * midpoint.x - sourceX * 0.5 - targetX * 0.5
+    const cy = 2 * midpoint.y - sourceY * 0.5 - targetY * 0.5
+    edgePath = `M ${sourceX} ${sourceY} Q ${cx} ${cy} ${targetX} ${targetY}`
+    labelX = midpoint.x
+    labelY = midpoint.y
+  } else {
+    const pathArgs = { sourceX, sourceY, sourcePosition, targetX, targetY, targetPosition }
+    const [d, lx, ly] =
+      edgeStyle === 'straight' ? getStraightPath({ sourceX, sourceY, targetX, targetY }) :
+      edgeStyle === 'step'     ? getSmoothStepPath(pathArgs) :
+                                 getBezierPath(pathArgs)
+    edgePath = d
+    labelX = lx
+    labelY = ly
+  }
+
+  const handleLabelPointerDown = (e: React.PointerEvent) => {
+    e.stopPropagation()
+    setSelected({ kind: 'relation', id: props.id })
+    setLocalMid({ x: labelX, y: labelY })
+
+    const onMove = (ev: PointerEvent) => {
+      setLocalMid(screenToFlowPosition({ x: ev.clientX, y: ev.clientY }))
+    }
+    const onUp = (ev: PointerEvent) => {
+      const pos = screenToFlowPosition({ x: ev.clientX, y: ev.clientY })
+      updateRelation(props.id, { midpoint: pos })
+      setLocalMid(null)
+      document.removeEventListener('pointermove', onMove)
+      document.removeEventListener('pointerup', onUp)
+    }
+    document.addEventListener('pointermove', onMove)
+    document.addEventListener('pointerup', onUp)
+  }
+
+  const hasBend = Boolean(midpoint && !localMid)  // persisted bend exists
 
   return (
     <>
@@ -402,24 +446,29 @@ function RelationEdgeView(props: EdgeProps<RelationEdge>) {
       <path
         id={props.id}
         className="react-flow__edge-path"
-        d={d}
+        d={edgePath}
         style={{ stroke: color, strokeWidth: 1.8, fill: 'none' }}
         markerEnd={`url(#${markerId})`}
       />
       <EdgeLabelRenderer>
-        <button
-          type="button"
-          className="relation-label"
+        <div
+          className={`relation-label nodrag nopan${hasBend ? ' relation-label--bent' : ''}`}
           style={{
             transform: `translate(-50%,-50%) translate(${labelX}px,${labelY}px)`,
             borderColor: color,
+            cursor: localMid ? 'grabbing' : 'grab',
+            pointerEvents: 'all',
           }}
+          onPointerDown={handleLabelPointerDown}
           onClick={() => setSelected({ kind: 'relation', id: props.id })}
         >
           <span className="relation-label-dot" style={{ background: color }} />
-          {props.data?.name ?? 'relation'}
+          {props.data?.label ?? props.data?.name ?? 'relation'}
           <span className="relation-label-card">{props.data?.cardinality ?? '1:N'}</span>
-        </button>
+          {(selected || hasBend) && (
+            <span className="edge-drag-handle" title="拖动调整线条弯曲">⠿</span>
+          )}
+        </div>
       </EdgeLabelRenderer>
     </>
   )
@@ -2464,6 +2513,15 @@ function Inspector() {
                     </div>
                   ) : null
                 })()}
+                {relation.data?.midpoint && (
+                  <button
+                    type="button"
+                    className="rel-reset-bend"
+                    onClick={() => updateRelation(relation.id, { midpoint: undefined })}
+                  >
+                    重置弯曲
+                  </button>
+                )}
               </section>
             )}
 
@@ -3069,6 +3127,7 @@ function SkillLibrarySection() {
   const toggleSkill  = useToggleSkill()
   const deleteSkill  = useDeleteSkill()
   const importSkill  = useImportSkill()
+  const queryClient  = useQueryClient()
 
   const [filterCat, setFilterCat]   = useState<string>('all')
   const [search, setSearch]         = useState('')
@@ -3101,6 +3160,44 @@ function SkillLibrarySection() {
     input.click()
   }
 
+  async function handleExportBundle() {
+    try {
+      const bundle = await api.exportSkillBundle()
+      const blob = new Blob([JSON.stringify(bundle, null, 2)], { type: 'application/json' })
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `skills-bundle-${new Date().toISOString().slice(0, 10)}.json`
+      a.click()
+      URL.revokeObjectURL(url)
+    } catch {
+      alert('导出失败，请稍后重试')
+    }
+  }
+
+  function handleImportBundle() {
+    const input = document.createElement('input')
+    input.type = 'file'; input.accept = '.json'
+    input.onchange = async () => {
+      const file = input.files?.[0]
+      if (!file) return
+      try {
+        const text = await file.text()
+        const parsed = JSON.parse(text)
+        const bundleSkills: unknown[] = parsed.skills ?? (Array.isArray(parsed) ? parsed : [parsed])
+        if (bundleSkills.length === 0) { alert('技能包为空'); return }
+        const result = await api.importSkillBundle(bundleSkills)
+        const msg = `导入完成：新增 ${result.imported} 条，更新 ${result.updated} 条，跳过 ${result.skipped} 条（内置）`
+          + (result.errors.length ? `\n失败：${result.errors.join('\n')}` : '')
+        alert(msg)
+        void queryClient.invalidateQueries({ queryKey: ['skills'] })
+      } catch {
+        alert('技能包解析失败，请确认文件格式正确')
+      }
+    }
+    input.click()
+  }
+
   async function handleExport(skill: Skill) {
     const data = await (api as any).exportSkill(skill.id)
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
@@ -3124,8 +3221,14 @@ function SkillLibrarySection() {
         <button type="button" className="btn-primary skill-new-btn" onClick={() => setEditing('new')}>
           <Plus size={14} /> 新建技能
         </button>
-        <button type="button" className="btn-ghost" onClick={handleImport} title="导入 JSON">
+        <button type="button" className="btn-ghost" onClick={handleImport} title="导入单条技能 JSON">
           <Upload size={14} /> 导入
+        </button>
+        <button type="button" className="btn-ghost" onClick={handleExportBundle} title="将所有自定义技能导出为技能包（可跨系统迁移）">
+          <FileDown size={14} /> 导出技能包
+        </button>
+        <button type="button" className="btn-ghost" onClick={handleImportBundle} title="从技能包文件批量导入技能（支持幂等更新）">
+          <Upload size={14} /> 导入技能包
         </button>
         <div className="skill-search">
           <Search size={13} />
@@ -3577,15 +3680,18 @@ function TextArea({ label, value, onChange }: { label: string; value: string; on
 /* ─── Instance Data: InstanceDataGrid ────────────────────────────────────── */
 
 function InstanceDataGrid({ dataset, entityNode }: { dataset: InstanceDataset; entityNode: EntityNode }) {
+  const updateRecord  = useSchemaStore((s) => s.updateRecord)
   const deleteRecord  = useSchemaStore((s) => s.deleteRecord)
   const deleteRecords = useSchemaStore((s) => s.deleteRecords)
   const properties    = entityNode.data.properties
   const records       = dataset.records
 
-  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
+  const [selectedIds,   setSelectedIds]  = useState<Set<string>>(new Set())
+  const [editingRowId,  setEditingRowId] = useState<string | null>(null)
+  const [editRowData,   setEditRowData]  = useState<Record<string, string>>({})
 
-  /* Reset selection when dataset changes */
-  useEffect(() => { setSelectedIds(new Set()) }, [dataset.id])
+  /* Reset editing when dataset changes */
+  useEffect(() => { setSelectedIds(new Set()); setEditingRowId(null) }, [dataset.id])
 
   const allSelected   = records.length > 0 && selectedIds.size === records.length
   const someSelected  = selectedIds.size > 0 && !allSelected
@@ -3595,6 +3701,7 @@ function InstanceDataGrid({ dataset, entityNode }: { dataset: InstanceDataset; e
   }
 
   function toggleRow(id: string) {
+    if (editingRowId) return  // 编辑中不允许切换选中行
     setSelectedIds((prev) => {
       const next = new Set(prev)
       next.has(id) ? next.delete(id) : next.add(id)
@@ -3607,6 +3714,29 @@ function InstanceDataGrid({ dataset, entityNode }: { dataset: InstanceDataset; e
     setSelectedIds(new Set())
     deleteRecords(dataset.id, ids)
   }
+
+  function startEdit(rec: InstanceRecord) {
+    const snapshot: Record<string, string> = {}
+    for (const p of properties) {
+      snapshot[p.name] = rec.data[p.name] != null ? String(rec.data[p.name]) : ''
+    }
+    setEditingRowId(rec.id)
+    setEditRowData(snapshot)
+  }
+
+  function saveEdit(rec: InstanceRecord) {
+    const newData: Record<string, InstanceFieldValue> = { ...rec.data }
+    for (const p of properties) {
+      const raw = editRowData[p.name] ?? ''
+      if (p.type === 'number') newData[p.name] = raw === '' ? null : Number(raw)
+      else if (p.type === 'boolean') newData[p.name] = raw.toLowerCase() === 'true' || raw === '1'
+      else newData[p.name] = raw === '' ? null : raw
+    }
+    updateRecord(dataset.id, rec.id, newData)
+    setEditingRowId(null)
+  }
+
+  function cancelEdit() { setEditingRowId(null) }
 
   if (records.length === 0) {
     return (
@@ -3669,7 +3799,7 @@ function InstanceDataGrid({ dataset, entityNode }: { dataset: InstanceDataset; e
               return (
                 <tr
                   key={rec.id}
-                  className={`${hasErr ? 'row-has-errors' : ''} ${checked ? 'row-selected' : ''}`}
+                  className={`${hasErr ? 'row-has-errors' : ''} ${checked ? 'row-selected' : ''} ${editingRowId === rec.id ? 'row-editing' : ''}`}
                   onClick={() => toggleRow(rec.id)}
                 >
                   <td className="col-checkbox" onClick={(e) => e.stopPropagation()}>
@@ -3681,21 +3811,42 @@ function InstanceDataGrid({ dataset, entityNode }: { dataset: InstanceDataset; e
                   </td>
                   {properties.map((p) => {
                     const err = rec.validationErrors[p.name]
+                    const isRowEditing = editingRowId === rec.id
                     return (
                       <td key={p.name} className={err ? 'cell-error' : ''} title={err}>
-                        {rec.data[p.name] != null ? String(rec.data[p.name]) : <span className="cell-null">—</span>}
+                        {isRowEditing ? (
+                          <input
+                            className="cell-edit-input"
+                            value={editRowData[p.name] ?? ''}
+                            onChange={(e) => setEditRowData((d) => ({ ...d, [p.name]: e.target.value }))}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') saveEdit(rec)
+                              if (e.key === 'Escape') cancelEdit()
+                            }}
+                            onClick={(e) => e.stopPropagation()}
+                          />
+                        ) : (
+                          rec.data[p.name] != null ? String(rec.data[p.name]) : <span className="cell-null">—</span>
+                        )}
                       </td>
                     )
                   })}
                   <td className="col-actions" onClick={(e) => e.stopPropagation()}>
-                    <button
-                      type="button"
-                      className="btn-row-del"
-                      title="删除此行"
-                      onClick={() => deleteRecord(dataset.id, rec.id)}
-                    >
-                      <Trash2 size={12} />
-                    </button>
+                    {editingRowId === rec.id ? (
+                      <>
+                        <button type="button" className="btn-row-save" title="保存" onClick={() => saveEdit(rec)}>✓</button>
+                        <button type="button" className="btn-row-cancel" title="取消" onClick={cancelEdit}>✕</button>
+                      </>
+                    ) : (
+                      <>
+                        <button type="button" className="btn-row-edit" title="编辑此行" onClick={() => startEdit(rec)}>
+                          <Pencil size={12} />
+                        </button>
+                        <button type="button" className="btn-row-del" title="删除此行" onClick={() => deleteRecord(dataset.id, rec.id)}>
+                          <Trash2 size={12} />
+                        </button>
+                      </>
+                    )}
                   </td>
                 </tr>
               )
@@ -4648,6 +4799,7 @@ function GenerateDataPanel({ twinId, modelIds, onClose }: {
     for (const mid of modelIds) {
       const model = models.find((mo) => mo.id === mid)
       for (const edge of (model?.edges ?? [])) {
+        if (edge.source === edge.target) continue  // 跳过自反关系，防止实体成为自身的父级
         const cat = edge.data?.relationCategory
         const rt  = edge.data?.relationType
         const isHier = (cat === 'structural' || cat === 'associative')
@@ -4695,6 +4847,7 @@ function GenerateDataPanel({ twinId, modelIds, onClose }: {
     for (const mid of modelIds) {
       const mdl = models.find((mo) => mo.id === mid)
       for (const edge of (mdl?.edges ?? [])) {
+        if (edge.source === edge.target) continue  // 跳过自反关系
         const srcIdx = entityOrder.indexOf(edge.source)
         const tgtIdx = entityOrder.indexOf(edge.target)
         if (srcIdx === -1 || tgtIdx === -1) continue
@@ -4909,8 +5062,10 @@ function GenerateDataPanel({ twinId, modelIds, onClose }: {
                         onChange={() => toggleEntity(n.id, false)}
                       />
                       <span className="entity-dot" style={{ background: n.data?.color || '#4f7bbd' }} />
-                      <span className="entity-item-label">{n.data?.label ?? n.id}</span>
-                      <code className="entity-item-name">{n.data?.name ?? ''}</code>
+                      <span className="entity-item-label">{n.data?.label || n.data?.name || n.id}</span>
+                      {n.data?.name && n.data.name !== n.data?.label && (
+                        <code className="entity-item-name">({n.data.name})</code>
+                      )}
                       <div className="entity-count-wrap entity-range-wrap">
                         <input
                           type="number"
@@ -4940,6 +5095,24 @@ function GenerateDataPanel({ twinId, modelIds, onClose }: {
                           <small className="entity-count-est">≈{est.min}~{est.max}条</small>
                         )}
                       </div>
+                      <button
+                        type="button"
+                        className="gen-single-btn"
+                        disabled={isGenerating || !selectedServiceId}
+                        title={`单独生成此实体`}
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          const r = entityRanges.get(n.id) ?? { min: 7, max: 13 }
+                          generateSimData({
+                            twinId, modelId, theme, locale, mode: genMode,
+                            aiServiceId: selectedServiceId,
+                            entityCounts: [{ entityNodeId: n.id, min: r.min, max: r.max }],
+                            hierParentIds: Object.fromEntries(batchParentMap),
+                            systemPrompt: systemPrompt !== GEN_DEFAULT_SYS_PROMPT ? systemPrompt : undefined,
+                            extraInstructions: extraInstructions.trim() || undefined,
+                          })
+                        }}
+                      >⚡</button>
                     </div>
                   )
                 })}
@@ -4958,8 +5131,10 @@ function GenerateDataPanel({ twinId, modelIds, onClose }: {
                       onChange={(e) => toggleEntity(n.id, e.target.checked)}
                     />
                     <span className="entity-dot" style={{ background: n.data?.color || '#4f7bbd' }} />
-                    <span className="entity-item-label">{n.data?.label ?? n.id}</span>
-                    <code className="entity-item-name">{n.data?.name ?? ''}</code>
+                    <span className="entity-item-label">{n.data?.label || n.data?.name || n.id}</span>
+                    {n.data?.name && n.data.name !== n.data?.label && (
+                      <code className="entity-item-name">({n.data.name})</code>
+                    )}
                   </div>
                 ))}
 
@@ -5109,19 +5284,31 @@ function ExportCypherButton() {
   const edges            = useSchemaStore((s) => s.edges)
   const instanceDatasets = useSchemaStore((s) => s.instanceDatasets)
   const activeBizTwinId  = useSchemaStore((s) => s.activeBizTwinId)
+  const bizTwins         = useSchemaStore((s) => s.bizTwins)
 
   const twinDatasets = instanceDatasets[activeBizTwinId ?? ''] ?? []
+  const twinName     = bizTwins.find((t) => t.id === activeBizTwinId)?.name ?? activeBizTwinId ?? 'export'
 
-  function handleExport() {
+  function handleExportCypher() {
     if (twinDatasets.length === 0) { alert('当前孪生暂无实例数据，请先导入'); return }
     const cypher = generateCypher(twinDatasets, nodes as EntityNode[], edges as RelationEdge[])
     downloadCypher(cypher, `twin-${activeBizTwinId ?? 'export'}.cypher`)
   }
 
+  function handleExportExcel() {
+    if (twinDatasets.length === 0) { alert('当前孪生暂无实例数据，请先导入'); return }
+    void exportTwinAsExcel(twinDatasets, nodes as EntityNode[], twinName)
+  }
+
   return (
-    <button type="button" className="btn-export-cypher" onClick={handleExport} title="导出 Neo4j Cypher">
-      <Database size={14} /> 导出 Cypher
-    </button>
+    <div style={{ display: 'flex', gap: 6 }}>
+      <button type="button" className="btn-export-cypher" onClick={handleExportCypher} title="导出 Neo4j Cypher（可在 Neo4j Browser 中执行）">
+        <Database size={14} /> 导出 Cypher
+      </button>
+      <button type="button" className="btn-export-cypher" onClick={handleExportExcel} title="导出 Excel（每个 Sheet 可单独通过 CSV 导入 UI 重新导入）">
+        <FileDown size={14} /> 导出 Excel
+      </button>
+    </div>
   )
 }
 
@@ -6014,42 +6201,29 @@ function InstancePropertyPanel() {
 
 const SMART_AI_MODES = [
   {
-    id:         'free',
-    icon:       '💬',
-    label:      '自由对话',
-    description:'直接与 AI 对话，提问或讨论业务场景，不调用图谱工具',
-    useSkills:  false,
-    placeholder:'随意提问，AI 将结合当前孪生信息回答…',
-    quickPrompts: [
-      '介绍一下这个业务孪生的整体结构',
-      '这类数据适合做哪些分析？',
-      '如何理解出差费用管理中的关键实体？',
-    ],
-  },
-  {
     id:         'insight',
     icon:       '🔍',
     label:      '数据分析',
-    description:'AI 自动调用图谱工具查询 Neo4j，分析实例数据并给出洞察',
+    description:'AI 自动调用专属技能查询真实实例数据，交互式逐问分析',
     useSkills:  true,
     placeholder:'描述你的分析需求，AI 将查询图谱后作答…',
     quickPrompts: [
-      '统计各类实体的数量分布',
-      '出差申请中最常见的目的地是哪里？',
-      '分析报销数据的完整性和异常情况',
+      '出差次数最多的员工是谁？',
+      '哪个部门出差最频繁？',
+      '交通方式的分布情况如何？',
     ],
   },
   {
     id:         'report',
-    icon:       '📝',
-    label:      '汇总报告',
-    description:'生成业务洞察报告，无需查询图谱，基于已有上下文综合分析',
-    useSkills:  false,
-    placeholder:'描述报告需求或主题，AI 将生成结构化分析报告…',
+    icon:       '📊',
+    label:      '分析报告',
+    description:'AI 自动调用全部专属技能收集真实数据，生成完整结构化分析报告',
+    useSkills:  true,
+    placeholder:'描述报告需求，AI 将查询数据后生成报告…',
     quickPrompts: [
-      '生成差旅费用管理的业务数据概览报告',
-      '对当前数据质量进行评估并给出建议',
-      '总结本体模型的设计特点与适用范围',
+      '生成差旅费用管理综合分析报告',
+      '生成各部门出差情况对比报告',
+      '分析出差费用异常情况并给出建议',
     ],
   },
 ] as const
@@ -6059,9 +6233,40 @@ type SmartAiModeId = typeof SMART_AI_MODES[number]['id']
 function ModelSkillsPanel() {
   const { data: skills = [], isLoading } = useSkills()
   const toggleSkill = useToggleSkill()
+  const queryClient = useQueryClient()
   const [editingSkill, setEditing] = useState<Skill | null>(null)
 
   const modelSkills = useMemo(() => skills.filter((s) => !s.isBuiltIn), [skills])
+
+  async function handleExportBundle() {
+    try {
+      const bundle = await api.exportSkillBundle()
+      const blob = new Blob([JSON.stringify(bundle, null, 2)], { type: 'application/json' })
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `skills-bundle-${new Date().toISOString().slice(0, 10)}.json`
+      a.click(); URL.revokeObjectURL(url)
+    } catch { alert('导出失败，请稍后重试') }
+  }
+
+  function handleImportBundle() {
+    const input = document.createElement('input')
+    input.type = 'file'; input.accept = '.json'
+    input.onchange = async () => {
+      const file = input.files?.[0]; if (!file) return
+      try {
+        const parsed = JSON.parse(await file.text())
+        const bundleSkills: unknown[] = parsed.skills ?? (Array.isArray(parsed) ? parsed : [parsed])
+        if (bundleSkills.length === 0) { alert('技能包为空'); return }
+        const result = await api.importSkillBundle(bundleSkills)
+        alert(`导入完成：新增 ${result.imported} 条，更新 ${result.updated} 条，跳过 ${result.skipped} 条（内置）`
+          + (result.errors.length ? `\n失败：${result.errors.join('\n')}` : ''))
+        void queryClient.invalidateQueries({ queryKey: ['skills'] })
+      } catch { alert('技能包解析失败，请确认文件格式正确') }
+    }
+    input.click()
+  }
 
   if (isLoading) return (
     <div style={{ padding: '12px', fontSize: 12, color: 'var(--text-muted)' }}>加载中…</div>
@@ -6074,6 +6279,16 @@ function ModelSkillsPanel() {
 
   return (
     <>
+      <div className="skill-bundle-bar">
+        <button type="button" className="skill-bundle-btn" onClick={handleExportBundle}
+          title="将所有专属技能导出为 JSON 包，可导入到其他同本体系统">
+          <FileDown size={12} /> 导出技能包
+        </button>
+        <button type="button" className="skill-bundle-btn" onClick={handleImportBundle}
+          title="从技能包 JSON 文件批量导入或更新专属技能">
+          <Upload size={12} /> 导入技能包
+        </button>
+      </div>
       <div className="skill-list">
         {modelSkills.map((skill) => (
           <div key={skill.id} className={`skill-row${skill.enabled ? '' : ' skill-row-disabled'}`}>
@@ -6139,7 +6354,7 @@ function SmartAiPanel({ collapsed, onToggle }: { collapsed: boolean; onToggle: (
   const activeModelId = activeTwin?.modelIds?.[0] ?? null
 
   const [input, setInput]         = useState('')
-  const [activeMode, setActiveMode] = useState<SmartAiModeId>('free')
+  const [activeMode, setActiveMode] = useState<SmartAiModeId>('insight')
   const [isRegenerating, setIsRegenerating]   = useState(false)
   const [regenMsg, setRegenMsg]               = useState<string | null>(null)
   const [isGenModelSkills, setIsGenModelSkills] = useState(false)
@@ -6159,7 +6374,7 @@ function SmartAiPanel({ collapsed, onToggle }: { collapsed: boolean; onToggle: (
     const t = (text ?? input).trim()
     if (!t || isSmartChatLoading) return
     if (!text) setInput('')
-    sendSmartMessage(t, mode.useSkills)
+    sendSmartMessage(t, mode.useSkills, mode.id === 'report')
   }
 
   async function handleRegenerateSkills() {
@@ -6399,6 +6614,17 @@ function SmartAiPanel({ collapsed, onToggle }: { collapsed: boolean; onToggle: (
             <span style={{ fontSize: 28 }}>{mode.icon}</span>
             <strong style={{ fontSize: 13 }}>{mode.label}</strong>
             <p style={{ fontSize: 12, color: 'var(--text-muted)', textAlign: 'center' }}>{mode.description}</p>
+            {mode.id === 'report' && (
+              <button
+                type="button"
+                className="smart-report-auto-btn"
+                onClick={() => handleSend(
+                  '请依次调用所有专属数据查询技能，收集各项数据后生成一份完整的业务分析报告，包含执行摘要、关键发现、风险与建议。'
+                )}
+              >
+                ⚡ 一键生成综合分析报告
+              </button>
+            )}
             <div className="smart-ai-prompts">
               {mode.quickPrompts.map((p) => (
                 <button key={p} type="button" className="smart-ai-prompt-chip"

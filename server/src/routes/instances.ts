@@ -187,6 +187,29 @@ instancesRouter.delete('/batch', async (req, res) => {
   }
 })
 
+/** PUT /api/instances/:id — update fields of a single instance record */
+instancesRouter.put('/:id', async (req, res) => {
+  const { data } = req.body as { data: Record<string, unknown> }
+  if (!data || typeof data !== 'object') return res.status(400).json({ error: 'data required' })
+  try {
+    // Build SET pairs for user-level fields only (skip _xxx internal fields)
+    const entries = Object.entries(data).filter(([k]) => !k.startsWith('_'))
+    if (entries.length === 0) return res.json({ ok: true })
+    const params: Record<string, unknown> = { id: req.params.id }
+    const setParts = entries.map(([k, v], i) => {
+      params[`v${i}`] = v
+      return `n.\`${k}\` = $v${i}`
+    })
+    await runWrite(
+      `MATCH (n:EntityInstance { _id: $id }) SET ${setParts.join(', ')}`,
+      params,
+    )
+    res.json({ ok: true })
+  } catch (e) {
+    res.status(500).json({ error: String(e) })
+  }
+})
+
 /** DELETE /api/instances/:id — delete a single instance record */
 instancesRouter.delete('/:id', async (req, res) => {
   try {

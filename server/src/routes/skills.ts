@@ -3,6 +3,103 @@ import { runQuery, runWrite } from '../neo4j/driver'
 
 export const skillsRouter = Router()
 
+/** GET /bundle — export all non-builtin skills as a portable JSON bundle */
+skillsRouter.get('/bundle', async (req, res) => {
+  const { category } = req.query as { category?: string }
+  const where = category
+    ? 'WHERE s.category = $category AND NOT coalesce(s.isBuiltIn, false)'
+    : 'WHERE NOT coalesce(s.isBuiltIn, false)'
+  try {
+    const rows = await runQuery(
+      `MATCH (s:Skill) ${where} RETURN s { .* } AS skill ORDER BY s.category, s.name`,
+      { category: category ?? null },
+    )
+    const skills = rows.map((r: any) => {
+      const { isBuiltIn: _ib, createdAt: _ca, updatedAt: _ua, ...rest } = r.skill
+      return { ...rest, toolInputSchema: rest.toolInputSchema ? JSON.parse(rest.toolInputSchema) : null }
+    })
+    const bundle = {
+      version:     '1.0',
+      exportedAt:  new Date().toISOString(),
+      source:      'Ontology Studio',
+      skillCount:  skills.length,
+      skills,
+    }
+    res.setHeader('Content-Disposition', `attachment; filename="skills-bundle-${Date.now()}.json"`)
+    res.json(bundle)
+  } catch (e) {
+    res.status(500).json({ error: String(e) })
+  }
+})
+
+/** POST /bundle — import (upsert) a bundle of skills */
+skillsRouter.post('/bundle', async (req, res) => {
+  const { skills } = req.body as { skills: any[] }
+  if (!Array.isArray(skills) || skills.length === 0)
+    return res.status(400).json({ error: 'skills array required' })
+
+  const now = new Date().toISOString()
+  let imported = 0, updated = 0, skipped = 0
+  const errors: string[] = []
+
+  for (const s of skills) {
+    if (s.isBuiltIn) { skipped++; continue }
+    const id = s.id ?? `skill-${Math.random().toString(36).slice(2)}`
+    const schema = s.toolInputSchema ? JSON.stringify(s.toolInputSchema) : ''
+    try {
+      const existing = await runQuery(`MATCH (s:Skill { id: $id }) RETURN s.id AS id`, { id })
+      if (existing.length > 0) {
+        await runWrite(`
+          MATCH (s:Skill { id: $id })
+          SET s.name = $name, s.description = $description, s.category = $category,
+              s.skillType = $skillType, s.systemPrompt = $systemPrompt,
+              s.cypherRead = $cypherRead, s.cypherWrite = $cypherWrite,
+              s.outputSchema = $outputSchema, s.toolName = $toolName,
+              s.toolDescription = $toolDescription, s.toolInputSchema = $toolInputSchema,
+              s.cypherExecution = $cypherExecution, s.enabled = $enabled,
+              s.isBuiltIn = false, s.version = $version, s.updatedAt = $updatedAt
+        `, {
+          id,
+          name: s.name ?? '', description: s.description ?? '',
+          category: s.category ?? 'graph-query', skillType: s.skillType ?? 'tool',
+          systemPrompt: s.systemPrompt ?? '', cypherRead: s.cypherRead ?? '',
+          cypherWrite: s.cypherWrite ?? '', outputSchema: s.outputSchema ?? '',
+          toolName: s.toolName ?? '', toolDescription: s.toolDescription ?? '',
+          toolInputSchema: schema, cypherExecution: s.cypherExecution ?? '',
+          enabled: s.enabled ?? true, version: s.version ?? '1.0.0', updatedAt: now,
+        })
+        updated++
+      } else {
+        await runWrite(`
+          CREATE (s:Skill {
+            id: $id, name: $name, description: $description, category: $category,
+            skillType: $skillType, systemPrompt: $systemPrompt,
+            cypherRead: $cypherRead, cypherWrite: $cypherWrite, outputSchema: $outputSchema,
+            toolName: $toolName, toolDescription: $toolDescription,
+            toolInputSchema: $toolInputSchema, cypherExecution: $cypherExecution,
+            enabled: $enabled, isBuiltIn: false, version: $version,
+            createdAt: $createdAt, updatedAt: $updatedAt
+          })
+        `, {
+          id,
+          name: s.name ?? '', description: s.description ?? '',
+          category: s.category ?? 'graph-query', skillType: s.skillType ?? 'tool',
+          systemPrompt: s.systemPrompt ?? '', cypherRead: s.cypherRead ?? '',
+          cypherWrite: s.cypherWrite ?? '', outputSchema: s.outputSchema ?? '',
+          toolName: s.toolName ?? '', toolDescription: s.toolDescription ?? '',
+          toolInputSchema: schema, cypherExecution: s.cypherExecution ?? '',
+          enabled: s.enabled ?? true, version: s.version ?? '1.0.0',
+          createdAt: now, updatedAt: now,
+        })
+        imported++
+      }
+    } catch (e) {
+      errors.push(`${s.name ?? id}: ${String(e)}`)
+    }
+  }
+  res.json({ imported, updated, skipped, errors, total: skills.length })
+})
+
 skillsRouter.get('/', async (req, res) => {
   const { category, skillType, enabled } = req.query as Record<string, string>
   try {

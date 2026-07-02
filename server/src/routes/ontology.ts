@@ -154,7 +154,14 @@ ontologyRouter.get('/models/:modelId/relations', async (req, res) => {
       MATCH (r)-[:TO]->(tgt:EntityDef)
       RETURN r { .* } AS rel, src.id AS sourceId, tgt.id AS targetId
     `, { modelId: req.params.modelId })
-    res.json(rows.map((r: any) => ({ ...r.rel, source: r.sourceId, target: r.targetId })))
+    res.json(rows.map((r: any) => ({
+      ...r.rel,
+      source: r.sourceId,
+      target: r.targetId,
+      midpoint: (r.rel.midpointX != null && r.rel.midpointY != null)
+        ? { x: Number(r.rel.midpointX), y: Number(r.rel.midpointY) }
+        : undefined,
+    })))
   } catch (e) {
     res.status(500).json({ error: String(e) })
   }
@@ -194,7 +201,7 @@ ontologyRouter.post('/models/:modelId/relations', async (req, res) => {
 })
 
 ontologyRouter.put('/relations/:id', async (req, res) => {
-  const { name, label, cardinality, description, edgeStyle, relationCategory, relationType, sourceKey, targetKey } = req.body
+  const { name, label, cardinality, description, edgeStyle, relationCategory, relationType, sourceKey, targetKey, midpointX, midpointY } = req.body
   try {
     const params: Record<string, unknown> = { id: req.params.id }
     const sets: string[] = []
@@ -207,6 +214,8 @@ ontologyRouter.put('/relations/:id', async (req, res) => {
     if (relationType     !== undefined) { sets.push('r.relationType = $relationType');         params.relationType = relationType ?? null }
     if (sourceKey        !== undefined) { sets.push('r.sourceKey = $sourceKey');               params.sourceKey = sourceKey ?? null }
     if (targetKey        !== undefined) { sets.push('r.targetKey = $targetKey');               params.targetKey = targetKey ?? null }
+    if (midpointX        !== undefined) { sets.push('r.midpointX = $midpointX');               params.midpointX = midpointX }
+    if (midpointY        !== undefined) { sets.push('r.midpointY = $midpointY');               params.midpointY = midpointY }
     if (!sets.length) return res.status(400).json({ error: 'No fields to update' })
 
     const rows = await runWrite(

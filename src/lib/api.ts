@@ -36,6 +36,9 @@ export interface RelDefDto {
   edgeStyle?: EdgeStyle; relationCategory?: RelationCategoryId
   relationType?: string
   source: string; target: string
+  midpoint?: { x: number; y: number }
+  sourceKey?: string
+  targetKey?: string
 }
 
 export interface BizTwinDto {
@@ -66,6 +69,9 @@ export function relDtoToEdge(r: RelDefDto): RelationEdge {
       description: r.description, edgeStyle: r.edgeStyle,
       relationCategory: r.relationCategory,
       relationType: r.relationType,
+      midpoint: r.midpoint,
+      sourceKey: r.sourceKey,
+      targetKey: r.targetKey,
     },
   }
 }
@@ -114,6 +120,7 @@ export const api = {
     name: string; label: string; cardinality: Cardinality
     description: string; edgeStyle: EdgeStyle; relationCategory: RelationCategoryId
     relationType: string; sourceKey: string; targetKey: string
+    midpointX: number | null; midpointY: number | null
   }>) => apiFetch<RelDefDto>(`/ontology/relations/${id}`, { method: 'PUT', body: JSON.stringify(body) }),
   rerouteRelation: (id: string, sourceId: string, targetId: string) =>
     apiFetch<void>(`/ontology/relations/${id}/reroute`, { method: 'PUT', body: JSON.stringify({ sourceId, targetId }) }),
@@ -160,6 +167,8 @@ export const api = {
     apiFetch<void>(`/instances/dataset?twinId=${encodeURIComponent(twinId)}&entityDefId=${encodeURIComponent(entityDefId)}`, { method: 'DELETE' }),
   deleteTwinInstances: (twinId: string) =>
     apiFetch<void>(`/instances/twin?twinId=${encodeURIComponent(twinId)}`, { method: 'DELETE' }),
+  updateInstance: (id: string, data: Record<string, unknown>) =>
+    apiFetch<{ ok: boolean }>(`/instances/${id}`, { method: 'PUT', body: JSON.stringify({ data }) }),
   deleteInstance: (id: string) =>
     apiFetch<void>(`/instances/${id}`, { method: 'DELETE' }),
 
@@ -187,6 +196,11 @@ export const api = {
   updateSkill:  (id: string, body: unknown) => apiFetch<unknown>(`/skills/${id}`, { method: 'PUT', body: JSON.stringify(body) }),
   deleteSkill:  (id: string) => apiFetch<void>(`/skills/${id}`, { method: 'DELETE' }),
   exportSkill:  (id: string) => apiFetch<unknown>(`/skills/${id}/export`),
+  exportSkillBundle: (category?: string) =>
+    apiFetch<unknown>(`/skills/bundle${category ? `?category=${encodeURIComponent(category)}` : ''}`),
+  importSkillBundle: (skills: unknown[]) =>
+    apiFetch<{ imported: number; updated: number; skipped: number; errors: string[]; total: number }>(
+      '/skills/bundle', { method: 'POST', body: JSON.stringify({ skills }) }),
 }
 
 /* ─── Load a full model (entities + relations) from API ──────────────────── */

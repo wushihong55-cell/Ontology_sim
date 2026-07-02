@@ -56,6 +56,7 @@ export type RelationData = {
   relationType?: string   // second-level preset name, e.g. 'partOf', 'isA', 'owns'
   sourceKey?: string
   targetKey?: string
+  midpoint?: { x: number; y: number }  // user-dragged bend point for the edge path
 }
 
 export type EntityNode = Node<EntityData, 'entity'>

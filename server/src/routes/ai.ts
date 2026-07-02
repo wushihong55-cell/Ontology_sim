@@ -29,13 +29,36 @@ async function loadTools(modelId?: string | null): Promise<SkillTool[]> {
     RETURN s { .* } AS skill
     ORDER BY s.category, s.name
   `, { modelId: modelId ?? null })
-  return rows.map((r: any) => ({
-    id:              r.skill.id,
-    toolName:        r.skill.toolName,
-    toolDescription: r.skill.toolDescription,
-    toolInputSchema: r.skill.toolInputSchema ? JSON.parse(r.skill.toolInputSchema) : {},
-    cypherExecution: r.skill.cypherExecution ?? '',
-  }))
+  const seen = new Set<string>()
+  return rows
+    .map((r: any) => ({
+      id:              r.skill.id,
+      toolName:        r.skill.toolName,
+      toolDescription: r.skill.toolDescription,
+      toolInputSchema: r.skill.toolInputSchema ? JSON.parse(r.skill.toolInputSchema) : {},
+      cypherExecution: r.skill.cypherExecution ?? '',
+    }))
+    .filter((t) => {
+      if (seen.has(t.toolName)) return false
+      seen.add(t.toolName)
+      return true
+    })
+}
+
+/** Convert Neo4j driver Integer objects { low, high } to plain JS numbers */
+function flattenNeo4j(val: unknown): unknown {
+  if (val === null || val === undefined) return val
+  if (typeof val === 'object' && !Array.isArray(val)) {
+    const obj = val as Record<string, unknown>
+    // Neo4j Integer: { low: number, high: number }
+    if ('low' in obj && 'high' in obj && Object.keys(obj).length === 2 &&
+        typeof obj.low === 'number' && typeof obj.high === 'number') {
+      return obj.high === 0 ? obj.low : obj.low + obj.high * 0x100000000
+    }
+    return Object.fromEntries(Object.entries(obj).map(([k, v]) => [k, flattenNeo4j(v)]))
+  }
+  if (Array.isArray(val)) return val.map(flattenNeo4j)
+  return val
 }
 
 async function executeToolCypher(
@@ -45,10 +68,19 @@ async function executeToolCypher(
   if (!skill.cypherExecution || skill.cypherExecution.trim().startsWith('//')) {
     return '__NO_DATA__: 此技能没有可执行的查询，无法获取真实数据。'
   }
+  const cypher = skill.cypherExecution
+
+  // Extract all $paramName refs and default any missing ones to null.
+  // This prevents Neo4j "ParameterMissing" errors when the LLM omits optional params.
+  // Existing params (including server-injected twinId) override the null defaults.
+  const paramNames = [...cypher.matchAll(/\$([A-Za-z_][A-Za-z0-9_]*)/g)].map((m) => m[1])
+  const defaults   = Object.fromEntries(paramNames.map((k) => [k, null]))
+  const finalParams = { ...defaults, ...params }
+
   try {
-    const rows = await runQuery(skill.cypherExecution, params)
+    const rows = await runQuery(cypher, finalParams)
     if (rows.length === 0) return '__NO_DATA__: 查询执行成功，但未找到任何匹配数据。'
-    return JSON.stringify(rows.slice(0, 100), null, 2)
+    return JSON.stringify(flattenNeo4j(rows.slice(0, 100)), null, 2)
   } catch (e) {
     return `__NO_DATA__: Cypher 执行失败: ${String(e)}`
   }
@@ -114,7 +146,7 @@ ${naturalLanguage}
   try {
     const rows = await runQuery(cypher, { twinId })
     if (rows.length === 0) return `__NO_DATA__: 查询未返回任何数据。\n执行的 Cypher：${cypher}`
-    return `查询：${cypher}\n\n结果：\n${JSON.stringify(rows.slice(0, 50), null, 2)}`
+    return `查询：${cypher}\n\n结果：\n${JSON.stringify(flattenNeo4j(rows.slice(0, 50)), null, 2)}`
   } catch (e) {
     return `__NO_DATA__: 生成的 Cypher 执行失败：${String(e)}\n查询：${cypher}`
   }
@@ -158,7 +190,9 @@ async function callLLMOnce(
         system:     systemPrompt,
         messages,
         tools:      anthropicTools.length ? anthropicTools : undefined,
-        tool_choice: forceToolName ? { type: 'tool', name: forceToolName } : undefined,
+        tool_choice: anthropicTools.length
+          ? (forceToolName ? { type: 'tool', name: forceToolName } : { type: 'any' })
+          : undefined,
       }),
     })
   } else {
@@ -174,7 +208,9 @@ async function callLLMOnce(
         max_tokens: 4096,
         messages:   [{ role: 'system', content: systemPrompt }, ...messages],
         tools:      openaiTools.length ? openaiTools : undefined,
-        tool_choice: forceToolName ? { type: 'function', function: { name: forceToolName } } : undefined,
+        tool_choice: openaiTools.length
+          ? (forceToolName ? { type: 'function', function: { name: forceToolName } } : 'required')
+          : undefined,
       }),
     })
   }
@@ -230,6 +266,35 @@ async function streamLLMResponse(
   const reader  = (resp.body as any).getReader()
   const decoder = new TextDecoder()
   let buffer    = ''
+  // DeepSeek DSML filter state — strip <｜｜DSML｜｜...> blocks from stream
+  let dsmlBuf   = ''
+  let inDsml    = false
+
+  const emitChunk = (chunk: string) => {
+    if (!chunk) return
+    // Accumulate into dsmlBuf to detect DSML boundaries
+    dsmlBuf += chunk
+    // Loop: emit safe prefix, detect+skip DSML blocks
+    while (true) {
+      if (!inDsml) {
+        const dsmlStart = dsmlBuf.indexOf('<｜｜DSML｜｜')
+        if (dsmlStart === -1) {
+          // No DSML — emit everything
+          if (dsmlBuf) { onChunk(dsmlBuf); dsmlBuf = '' }
+          break
+        }
+        // Emit safe text before DSML
+        if (dsmlStart > 0) { onChunk(dsmlBuf.slice(0, dsmlStart)); dsmlBuf = dsmlBuf.slice(dsmlStart) }
+        inDsml = true
+      }
+      // Inside DSML — look for closing tag
+      const dsmlEnd = dsmlBuf.indexOf('</｜｜DSML｜｜tool_calls>')
+      if (dsmlEnd === -1) break  // DSML block not yet complete — wait for more chunks
+      // Skip the complete DSML block
+      dsmlBuf = dsmlBuf.slice(dsmlEnd + '</｜｜DSML｜｜tool_calls>'.length)
+      inDsml = false
+    }
+  }
 
   while (true) {
     const { done, value } = await reader.read()
@@ -247,10 +312,12 @@ async function streamLLMResponse(
         const chunk = cfg.provider === 'anthropic'
           ? (ev.type === 'content_block_delta' && ev.delta?.type === 'text_delta' ? ev.delta.text : '')
           : (ev.choices?.[0]?.delta?.content ?? '')
-        if (chunk) onChunk(chunk)
+        if (chunk) emitChunk(chunk)
       } catch { /* skip malformed SSE */ }
     }
   }
+  // Flush remaining safe text (if DSML block was incomplete, discard it)
+  if (dsmlBuf && !inDsml) onChunk(dsmlBuf)
 }
 
 /* ── POST /api/ai/chat ──────────────────────────────────────────────────────── */
@@ -268,7 +335,7 @@ async function streamLLMResponse(
  *             `data: [DONE]\n\n`
  */
 aiRouter.post('/chat', async (req: Request, res: ExpressResponse) => {
-  const { message, twinId, modelId, schemaContext, odlContext, aiConfig, history = [], useSkills = true } = req.body as {
+  const { message, twinId, modelId, schemaContext, odlContext, aiConfig, history = [], useSkills = true, reportMode = false } = req.body as {
     message:        string
     twinId?:        string
     modelId?:       string
@@ -276,7 +343,8 @@ aiRouter.post('/chat', async (req: Request, res: ExpressResponse) => {
     odlContext?:    string
     aiConfig:       AiServiceCfg
     history:        { role: string; content: string }[]
-    useSkills?: boolean
+    useSkills?:   boolean
+    reportMode?:  boolean
   }
 
   if (!message)   return res.status(400).json({ error: 'message is required' })
@@ -294,6 +362,7 @@ aiRouter.post('/chat', async (req: Request, res: ExpressResponse) => {
     let systemPrompt = `你是一个专业的知识图谱助手，擅长本体设计、图谱查询、数据分析与业务洞察。请用中文回答，语言专业简洁。
 
 【重要规则】你的回答必须严格基于技能工具返回的真实数据：
+- ⚠️ 凡是回答涉及实例数据（出差次数、部门名称、员工姓名、金额等具体数值）的问题，必须先调用工具查询，严禁凭记忆或经验生成任何数字或实体名称，工具返回结果之前不得给出任何具体数据。
 - 如果工具结果以 "__NO_DATA__" 开头，说明未查到任何数据，你必须如实回复"未查到相关数据，无法回答该问题"，禁止编造或推测任何数字、姓名、结果。
 - 如果工具返回了数据，只能引用数据中实际存在的内容，不可补充或推断未出现的信息。
 - 宁可说"不知道"，也不可给出无依据的答案。`
@@ -336,12 +405,28 @@ aiRouter.post('/chat', async (req: Request, res: ExpressResponse) => {
           systemPrompt += `\n\n【实例数据规模】${summary}`
           systemPrompt += `\n\n【数据查询技能使用规则】`
           systemPrompt += `\n- 所有实例节点标签统一为 :EntityInstance，用 _entityDefId 属性区分实体类型`
-          systemPrompt += `\n- 查询数据时优先使用 nl_to_cypher 或 aggregate_stats 技能，传入 naturalLanguage 参数描述查询意图`
+          systemPrompt += `\n- 优先使用已定义的专属技能（如 query_dept_trip_summary、query_trip_frequency_by_employee 等），它们有预置 Cypher 更准确；若无精确匹配的专属技能，再使用 nl_to_cypher`
           systemPrompt += `\n- 用 entityDefId（括号中的值）区分实体，禁止在 Cypher 或参数中使用中文实体名`
           systemPrompt += `\n- twinId 参数已自动注入到所有技能调用中，无需手动传入`
           systemPrompt += `\n- 若工具返回 __NO_DATA__ 开头的结果，则代表无真实数据，必须如实告知用户，不得编造数据`
         }
       }
+    }
+
+    // ── 报告模式：注入专用系统提示词 ───────────────────────────────────────
+    if (reportMode) {
+      systemPrompt += `
+
+【当前为分析报告生成模式】
+你的任务是生成一份完整的业务分析报告，必须遵循以下步骤：
+1. 首先**依次调用所有可用的专属数据查询技能**（包括出差频率、部门汇总、费用排行、交通分布、城市热度、报销审批状态等），系统性地收集真实数据。
+2. 全部工具调用完成后，基于工具返回的真实数据，生成如下结构的分析报告：
+   ## 执行摘要
+   ## 关键发现（每条必须引用具体数字，数字来自工具结果）
+   ## 风险与异常（如发现高额费用、低效审批等）
+   ## 建议（具体可操作）
+3. 若某项工具返回 __NO_DATA__，在报告中注明"该项暂无数据"，不得编造。
+4. 报告中所有数字、姓名、部门名称等必须 100% 来自工具返回结果，严禁根据经验填补或推测。`
     }
 
     // ── 2. Load tool-type skills (generic + model-specific) ────────────────
@@ -394,13 +479,13 @@ aiRouter.post('/chat', async (req: Request, res: ExpressResponse) => {
         const nlQuery = toolInput.naturalLanguage ?? toolInput.query ?? toolInput.description ?? ''
         result = await executeNlToCypher(
           nlQuery || JSON.stringify(toolInput),
-          toolInput.twinId ?? twinId ?? '',
+          twinId ?? toolInput.twinId ?? '',
           aiConfig,
           schemaContext,
         )
       } else {
         result = skill
-          ? await executeToolCypher(skill, { twinId, ...toolInput })
+          ? await executeToolCypher(skill, { ...toolInput, twinId })
           : `(未找到名为 "${toolName}" 的技能)`
       }
 
@@ -433,6 +518,8 @@ aiRouter.post('/chat', async (req: Request, res: ExpressResponse) => {
         ...conversationMsgs,
         { role: 'assistant', content: assistantMsg.content ?? '', tool_calls: assistantMsg.tool_calls } as any,
         ...toolResultMsgs,
+        // Tell the model to summarize directly — prevents DeepSeek from trying to call more tools
+        { role: 'user', content: '请直接根据以上查询结果给出分析结论，不要再调用任何工具或生成 Cypher。' } as any,
       ]
     }
 
@@ -1039,9 +1126,29 @@ aiRouter.post('/generate-data', async (req: Request, res: ExpressResponse) => {
         )
       }
 
-      const propSpecs = (entity.properties ?? []).map((p: any) =>
-        `- ${p.name}${p.nameZh ? `（${p.nameZh}）` : ''}: ${p.type}${p.required ? ' [必填]' : ''}${p.description ? '，说明：' + p.description : ''}`
-      ).join('\n') || '（暂无属性定义）'
+      const propSpecs = (entity.properties ?? []).map((p: any) => {
+        let spec = `- ${p.name}${p.nameZh ? `（${p.nameZh}）` : ''}: ${p.type}${p.required ? ' [必填]' : ''}`
+        if (p.description) spec += `，说明：${p.description}`
+        const c = p.constraints
+        if (c) {
+          if (p.type === 'enum' && c.enumValues?.length)
+            spec += `，【取值必须为以下之一，不得使用其他值】：${(c.enumValues as string[]).join(' / ')}`
+          if (p.type === 'number') {
+            if (c.min !== undefined) spec += `，最小值：${c.min}`
+            if (c.max !== undefined) spec += `，最大值：${c.max}`
+          }
+          if (p.type === 'string') {
+            if (c.minLength !== undefined) spec += `，最短：${c.minLength}字`
+            if (c.maxLength !== undefined) spec += `，最长：${c.maxLength}字`
+            if (c.pattern) spec += `，格式正则：${c.pattern}`
+          }
+          if (p.type === 'date') {
+            if (c.minDate) spec += `，最早：${c.minDate}`
+            if (c.maxDate) spec += `，最晚：${c.maxDate}`
+          }
+        }
+        return spec
+      }).join('\n') || '（暂无属性定义）'
 
       /* Collect all records across batches for FK value harvesting */
       const allBatchRecords: Record<string, unknown>[] = []
@@ -1127,7 +1234,7 @@ ${propSpecs}
 ${prevCtx}${fkSection}
 
 要求：
-1. 生成恰好 ${countPerParent} 条记录，每条必须包含全部必填属性
+1. 生成恰好 ${countPerParent} 条记录，每条必须包含全部属性（必填和可选均需填写，生成完整真实的数据，禁止留空）
 2. 枚举类型字段只取属性描述中列举的合法值
 3. number 字段填数字，date 字段填 ISO 格式日期（如 2024-03-15），boolean 字段填 true/false
 4. 优先通过 submit_entity_records 工具一次性提交所有记录；若无法调用工具，则直接输出纯 JSON 数组（不要任何额外说明）${extraInstructions ? `\n\n额外要求：\n${extraInstructions}` : ''}`

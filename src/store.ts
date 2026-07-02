@@ -634,7 +634,7 @@ export type SchemaStore = {
   clearAiChat: () => void
   smartChatMsgs: AiChatMsg[]
   isSmartChatLoading: boolean
-  sendSmartMessage: (content: string, useSkills?: boolean) => Promise<void>
+  sendSmartMessage: (content: string, useSkills?: boolean, reportMode?: boolean) => Promise<void>
   clearSmartChat: () => void
   exportSchema: () => void
   importSchemaFromData: (nodes: EntityNode[], edges: RelationEdge[]) => Promise<void>
@@ -662,6 +662,7 @@ export type SchemaStore = {
   instanceDatasets: Record<string, InstanceDataset[]>   // twinId → datasets
   addOrReplaceDataset: (dataset: InstanceDataset) => void
   deleteDataset: (datasetId: string) => void
+  updateRecord: (datasetId: string, recordId: string, data: Record<string, import('./types').InstanceFieldValue>) => void
   deleteRecord: (datasetId: string, recordId: string) => void
   deleteRecords: (datasetId: string, recordIds: string[]) => void
   activeImport: ActiveImport | null
@@ -1128,7 +1129,14 @@ export const useSchemaStore = create<SchemaStore>()(
             models: patchActiveModel(s.models, s.activeModelId, { edges: newEdges }),
           }
         })
-        void api.updateRelation(id, patch as Parameters<typeof api.updateRelation>[1])
+        // translate midpoint object → flat midpointX/Y for the server
+        const { midpoint, ...rest } = patch as typeof patch & { midpoint?: { x: number; y: number } | null }
+        const apiPatch: Parameters<typeof api.updateRelation>[1] = rest as Parameters<typeof api.updateRelation>[1]
+        if ('midpoint' in patch) {
+          ;(apiPatch as Record<string, unknown>).midpointX = midpoint?.x ?? null
+          ;(apiPatch as Record<string, unknown>).midpointY = midpoint?.y ?? null
+        }
+        void api.updateRelation(id, apiPatch)
       },
 
       rerouteRelation: (id, sourceId, targetId) => {
@@ -1202,6 +1210,22 @@ export const useSchemaStore = create<SchemaStore>()(
         if (twinId && entityDefId) {
           void api.deleteDatasetInstances(twinId, entityDefId)
         }
+      },
+
+      updateRecord: (datasetId, recordId, data) => {
+        set((s) => {
+          const updated: Record<string, InstanceDataset[]> = {}
+          for (const [key, datasets] of Object.entries(s.instanceDatasets)) {
+            updated[key] = datasets.map((d) =>
+              d.id !== datasetId ? d : {
+                ...d,
+                records: d.records.map((r) => r.id !== recordId ? r : { ...r, data }),
+              },
+            )
+          }
+          return { instanceDatasets: updated }
+        })
+        void api.updateInstance(recordId, data as Record<string, unknown>)
       },
 
       deleteRecord: (datasetId, recordId) => {
@@ -1379,11 +1403,13 @@ export const useSchemaStore = create<SchemaStore>()(
               twinName:  bizTwins.find((t) => t.id === cfg.twinId)?.name,
               modelId:   cfg.modelId,
               config: {
-                theme:         cfg.theme,
-                entityCounts:  cfg.entityCounts,
-                hierParentIds: cfg.hierParentIds ?? {},
-                locale:        cfg.locale ?? 'zh-CN',
-                mode:          cfg.mode ?? 'overwrite',
+                theme:              cfg.theme,
+                entityCounts:       cfg.entityCounts,
+                hierParentIds:      cfg.hierParentIds ?? {},
+                locale:             cfg.locale ?? 'zh-CN',
+                mode:               cfg.mode ?? 'overwrite',
+                systemPrompt:       cfg.systemPrompt,
+                extraInstructions:  cfg.extraInstructions,
               },
               aiConfig,
             }),
@@ -1739,7 +1765,7 @@ export const useSchemaStore = create<SchemaStore>()(
 
       clearSmartChat: () => set({ smartChatMsgs: [] }),
 
-      sendSmartMessage: async (content, useSkills = true) => {
+      sendSmartMessage: async (content, useSkills = true, reportMode = false) => {
         const state    = get()
         const aiConfig = state.aiServices.find((s) => s.id === state.activeAiServiceId)
 
@@ -1814,6 +1840,7 @@ export const useSchemaStore = create<SchemaStore>()(
               },
               history,
               useSkills,
+              reportMode,
             }),
           })
 
