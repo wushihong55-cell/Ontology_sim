@@ -1,5 +1,104 @@
 import type { EntityNode, RelationEdge, InstanceDataset } from '../types'
 
+/**
+ * Export each entity dataset as a separate CSV file (one download per entity).
+ * Column headers = property.name fields, matching the CSV import auto-mapping logic.
+ * Files are UTF-8 with BOM so Excel opens them without encoding issues.
+ */
+export async function exportTwinAsCSV(
+  datasets: InstanceDataset[],
+  nodes: EntityNode[],
+): Promise<void> {
+  const active = datasets.filter((ds) => {
+    const node = nodes.find((n) => n.id === ds.entityNodeId)
+    return node && ds.records.length > 0 && node.data.properties.length > 0
+  })
+  if (active.length === 0) { alert('当前孪生暂无实例数据，请先导入'); return }
+
+  for (const ds of active) {
+    const node = nodes.find((n) => n.id === ds.entityNodeId)!
+    const headers = node.data.properties.map((p) => p.name)
+
+    function csvCell(v: unknown): string {
+      const s = v === null || v === undefined ? '' : String(v)
+      return s.includes(',') || s.includes('\n') || s.includes('"')
+        ? `"${s.replace(/"/g, '""')}"`
+        : s
+    }
+
+    const lines = [
+      headers.join(','),
+      ...ds.records.map((r) => headers.map((h) => csvCell(r.data[h])).join(',')),
+    ]
+    const csv  = lines.join('\r\n')
+    const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8' })
+    const url  = URL.createObjectURL(blob)
+    const a    = document.createElement('a')
+    a.href = url
+    a.download = `${(node.data.label || node.data.name).replace(/[/\\?*[\]]/g, '_')}.csv`
+    a.click()
+    URL.revokeObjectURL(url)
+    await new Promise<void>((resolve) => setTimeout(resolve, 250))
+  }
+}
+
+type TwinBundleEntity = {
+  entityName: string
+  entityLabel: string
+  recordCount: number
+  records: Record<string, unknown>[]
+}
+
+export type TwinBundle = {
+  version: string
+  exportedAt: string
+  source: string
+  twinName: string
+  modelId: string
+  entityCount: number
+  recordCount: number
+  entities: TwinBundleEntity[]
+}
+
+export function exportTwinAsJSON(
+  datasets: InstanceDataset[],
+  nodes: EntityNode[],
+  twinName: string,
+  modelId: string,
+): void {
+  const active = datasets
+    .map((ds) => ({ ds, node: nodes.find((n) => n.id === ds.entityNodeId) }))
+    .filter((x): x is { ds: InstanceDataset; node: EntityNode } => !!x.node && x.ds.records.length > 0)
+
+  if (active.length === 0) { alert('当前孪生暂无实例数据，请先导入'); return }
+
+  const entities: TwinBundleEntity[] = active.map(({ ds, node }) => ({
+    entityName:  node.data.name,
+    entityLabel: node.data.label || node.data.name,
+    recordCount: ds.records.length,
+    records:     ds.records.map((r) => r.data as Record<string, unknown>),
+  }))
+
+  const bundle: TwinBundle = {
+    version:     '1.0',
+    exportedAt:  new Date().toISOString(),
+    source:      'Ontology Studio',
+    twinName,
+    modelId,
+    entityCount: entities.length,
+    recordCount: entities.reduce((s, e) => s + e.recordCount, 0),
+    entities,
+  }
+
+  const blob = new Blob([JSON.stringify(bundle, null, 2)], { type: 'application/json' })
+  const url  = URL.createObjectURL(blob)
+  const a    = document.createElement('a')
+  a.href = url
+  a.download = `twin-${twinName.replace(/[^A-Za-z0-9一-龥]/g, '_')}-${new Date().toISOString().slice(0, 10)}.json`
+  a.click()
+  URL.revokeObjectURL(url)
+}
+
 function toUpperSnake(name: string): string {
   return name.replace(/([A-Z])/g, '_$1').toUpperCase().replace(/^_/, '')
 }

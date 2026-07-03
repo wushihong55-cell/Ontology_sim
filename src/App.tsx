@@ -79,6 +79,7 @@ import {
   AlertTriangle,
   Wand2,
   Filter,
+  Package,
 } from 'lucide-react'
 import { useSchemaStore, makeId, buildSchemaContext, validateSchema } from './store'
 import { parseExcelSchema, parseJsonSchema, buildNodesEdges, mergeNodesEdges, generateTemplateXlsx, exportSchemaAsXlsx, type ImportResult } from './lib/schemaImporter'
@@ -87,7 +88,7 @@ import { useSkills, useToggleSkill, useSaveSkill, useDeleteSkill, useImportSkill
 import { api } from './lib/api'
 import { parseCSV, parseJSON, flattenJsonDocument, extractArrayRows, smartMapFieldsMultiEntity, type FolderFieldMapping } from './lib/csvParser'
 import { buildInstanceRecords } from './lib/instanceValidator'
-import { generateCypher, downloadCypher, exportTwinAsExcel } from './lib/cypherExporter'
+import { generateCypher, downloadCypher, exportTwinAsExcel, exportTwinAsCSV, exportTwinAsJSON, type TwinBundle } from './lib/cypherExporter'
 import { SKILL_DEFINITIONS, SKILL_ORDER } from './lib/skills'
 import './App.css'
 
@@ -4006,6 +4007,8 @@ function ImportDataView() {
   const addOrReplaceDataset = useSchemaStore((s) => s.addOrReplaceDataset)
   const activeModelId       = useSchemaStore((s) => s.activeModelId)
   const setInstanceViewTab  = useSchemaStore((s) => s.setInstanceViewTab)
+  const relinkInstances     = useSchemaStore((s) => s.relinkInstances)
+  const initFromApi         = useSchemaStore((s) => s.initFromApi)
 
   const activeTwin = bizTwins.find((t) => t.id === activeBizTwinId)
 
@@ -4023,11 +4026,17 @@ function ImportDataView() {
   }, [activeTwin, allModels])
 
   const [step, setStep] = useState<'source' | 'folder-mapping' | 'mapping' | 'confirm'>('source')
-  const [sourceType, setSourceType] = useState<'json-folder' | 'db-file' | 'direct-db' | null>(null)
+  const [sourceType, setSourceType] = useState<'json-folder' | 'db-file' | 'direct-db' | 'bundle' | null>(null)
   const [files, setFiles] = useState<LocalImportFile[]>([])
   const [activeFileIdx, setActiveFileIdx] = useState(0)
-  const folderRef = useRef<HTMLInputElement>(null)
-  const dbFileRef = useRef<HTMLInputElement>(null)
+  const folderRef  = useRef<HTMLInputElement>(null)
+  const dbFileRef  = useRef<HTMLInputElement>(null)
+  const bundleRef  = useRef<HTMLInputElement>(null)
+
+  // Bundle import state
+  const [bundleData,      setBundleData]      = useState<TwinBundle | null>(null)
+  const [bundleImporting, setBundleImporting] = useState(false)
+  const [bundleLog,       setBundleLog]       = useState<string[]>([])
 
   // Folder import — per-folder state (one mapping template for all files, multi-entity)
   const [folderRawFiles, setFolderRawFiles]       = useState<File[]>([])
@@ -4069,6 +4078,18 @@ function ImportDataView() {
       .sort((a, b) => a.name.localeCompare(b.name))
     e.target.value = ''
     if (selected.length === 0) return
+
+    // Detect bundle format: auto-switch to bundle import mode
+    try {
+      const firstText = await selected[0].text()
+      const firstParsed = JSON.parse(firstText)
+      if (firstParsed?.version && Array.isArray(firstParsed?.entities)) {
+        setSourceType('bundle')
+        setBundleData(firstParsed as TwinBundle)
+        setBundleLog([])
+        return
+      }
+    } catch { /* not bundle, continue */ }
 
     try {
       const sample = flattenJsonDocument(JSON.parse(await selected[0].text()))
@@ -4217,6 +4238,20 @@ function ImportDataView() {
     reader.onload = (ev) => {
       const text = ev.target?.result as string
       const isJson = file.name.toLowerCase().endsWith('.json')
+
+      // Detect bundle format: auto-switch to bundle import mode
+      if (isJson) {
+        try {
+          const parsed = JSON.parse(text)
+          if (parsed?.version && Array.isArray(parsed?.entities)) {
+            setSourceType('bundle')
+            setBundleData(parsed as TwinBundle)
+            setBundleLog([])
+            return
+          }
+        } catch { /* not bundle, fall through */ }
+      }
+
       const result = isJson ? parseJSON(text) : parseCSV(text)
       if (result.error) { alert(result.error); return }
       const defaultEntityId = entityNodes[0]?.id ?? ''
@@ -4270,6 +4305,69 @@ function ImportDataView() {
   const activeFile   = files[activeFileIdx]
   const activeEntity = activeFile ? entityNodes.find((n) => n.id === activeFile.entityNodeId) : undefined
 
+  // ── Bundle import handlers ──────────────────────────────────────────────────
+  function handleBundleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    e.target.value = ''
+    void file.text().then((text) => {
+      try {
+        const parsed = JSON.parse(text) as TwinBundle
+        if (!parsed.version || !Array.isArray(parsed.entities)) {
+          alert('格式不正确，请选择由本系统「导出数据包」生成的 .json 文件')
+          return
+        }
+        setBundleData(parsed)
+        setBundleLog([])
+      } catch {
+        alert('无法解析文件，请确认选择的是有效的 JSON 数据包')
+      }
+    })
+  }
+
+  async function handleImportBundle() {
+    if (!bundleData || !activeBizTwinId) return
+    setBundleImporting(true)
+    const log = (msg: string) => setBundleLog((prev) => [...prev, msg])
+    const modelId = activeTwin?.modelIds[0] ?? activeModelId
+
+    for (const entity of bundleData.entities) {
+      const localNode = entityNodes.find((n) => n.data.name === entity.entityName)
+      if (!localNode) {
+        log(`⚠️ 跳过：本地模型中无实体类型 "${entity.entityName}"`)
+        continue
+      }
+      log(`正在导入 ${entity.entityLabel}（${entity.records.length} 条）…`)
+      try {
+        await api.deleteDatasetInstances(activeBizTwinId, localNode.id)
+        await api.createInstances({
+          twinId:      activeBizTwinId,
+          entityDefId: localNode.id,
+          records:     entity.records.map((data) => ({ id: makeId('r'), data })),
+          modelId,
+          sourceLabel: `数据包-${bundleData.twinName}`,
+          importedAt:  new Date().toISOString(),
+        })
+        log(`✓ ${entity.entityLabel} 导入完成`)
+      } catch (err) {
+        log(`✗ ${entity.entityLabel} 失败: ${err instanceof Error ? err.message : String(err)}`)
+      }
+    }
+
+    log('重建实体间关系…')
+    const result = await relinkInstances(activeBizTwinId)
+    if (result) {
+      log(`✓ 关系重建完成（${result.created} 条关系已创建）`)
+    } else {
+      log('⚠️ 关系重建失败，请在孪生面板手动触发「建立关系」')
+    }
+
+    log('刷新数据视图…')
+    await initFromApi()
+    setBundleImporting(false)
+    setInstanceViewTab('table')
+  }
+
   function renderFileList(fileList: LocalImportFile[]) {
     if (fileList.length === 0) return null
     return (
@@ -4296,7 +4394,7 @@ function ImportDataView() {
 
   return (
     <div className="import-data-view">
-      {/* Always-mounted hidden file input for folder picker (used in both source and folder-mapping steps) */}
+      {/* Hidden file inputs */}
       <input
         ref={folderRef}
         type="file"
@@ -4306,20 +4404,29 @@ function ImportDataView() {
         onChange={handleFolderInput}
         {...({ webkitdirectory: '' } as object)}
       />
-      {/* Step bar */}
-      <div className="import-step-bar">
-        <div className={`import-step-item ${step === 'source' ? 'active' : 'done'}`}>
-          <span className="import-step-num">1</span> 数据源
+      <input
+        ref={bundleRef}
+        type="file"
+        accept=".json"
+        style={{ display: 'none' }}
+        onChange={handleBundleFileChange}
+      />
+      {/* Step bar — hidden in bundle mode */}
+      {sourceType !== 'bundle' && (
+        <div className="import-step-bar">
+          <div className={`import-step-item ${step === 'source' ? 'active' : 'done'}`}>
+            <span className="import-step-num">1</span> 数据源
+          </div>
+          <span className="import-step-sep">›</span>
+          <div className={`import-step-item ${step === 'mapping' || step === 'folder-mapping' ? 'active' : step === 'confirm' ? 'done' : ''}`}>
+            <span className="import-step-num">2</span> 字段映射
+          </div>
+          <span className="import-step-sep">›</span>
+          <div className={`import-step-item ${step === 'confirm' ? 'active' : ''}`}>
+            <span className="import-step-num">3</span> 导入数据
+          </div>
         </div>
-        <span className="import-step-sep">›</span>
-        <div className={`import-step-item ${step === 'mapping' || step === 'folder-mapping' ? 'active' : step === 'confirm' ? 'done' : ''}`}>
-          <span className="import-step-num">2</span> 字段映射
-        </div>
-        <span className="import-step-sep">›</span>
-        <div className={`import-step-item ${step === 'confirm' ? 'active' : ''}`}>
-          <span className="import-step-num">3</span> 导入数据
-        </div>
-      </div>
+      )}
 
       {/* Step content */}
       <div className="import-step-content">
@@ -4346,6 +4453,14 @@ function ImportDataView() {
                 <div className="import-source-card-icon"><Server size={20} /></div>
                 <div className="import-source-card-title">直连数据库</div>
                 <div className="import-source-card-desc">通过连接字符串直接读取</div>
+              </div>
+              <div
+                className={`import-source-card ${sourceType === 'bundle' ? 'selected' : ''}`}
+                onClick={() => { setSourceType('bundle'); setFiles([]); setBundleData(null); setBundleLog([]) }}
+              >
+                <div className="import-source-card-icon"><Package size={20} /></div>
+                <div className="import-source-card-title">导入数据包</div>
+                <div className="import-source-card-desc">一键导入完整数据包（含关系）</div>
               </div>
             </div>
 
@@ -4375,6 +4490,75 @@ function ImportDataView() {
                   <span className="import-drop-sub">支持 .json、.csv 格式</span>
                 </div>
                 {renderFileList(files)}
+              </div>
+            )}
+
+            {sourceType === 'bundle' && (
+              <div className="import-source-config">
+                {!bundleData ? (
+                  <div className="import-drop-hint" onClick={() => bundleRef.current?.click()}>
+                    <Package size={28} />
+                    <span>点击选择数据包文件</span>
+                    <span className="import-drop-sub">选择由本系统「导出数据包」生成的 .json 文件</span>
+                  </div>
+                ) : (
+                  <div className="bundle-preview">
+                    <div className="bundle-preview-header">
+                      <Package size={16} />
+                      <div>
+                        <div className="bundle-preview-title">{bundleData.twinName}</div>
+                        <div className="bundle-preview-meta">
+                          模型 {bundleData.modelId} · {bundleData.entityCount} 种实体 · 共 {bundleData.recordCount} 条记录
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        className="btn-ghost"
+                        style={{ marginLeft: 'auto', fontSize: 11 }}
+                        onClick={() => { setBundleData(null); setBundleLog([]) }}
+                      >
+                        重新选择
+                      </button>
+                    </div>
+                    <ul className="bundle-entity-list">
+                      {bundleData.entities.map((e) => (
+                        <li key={e.entityName}>
+                          <span className="bundle-entity-name">{e.entityLabel}</span>
+                          <span className="bundle-entity-count">{e.recordCount} 条</span>
+                          {entityNodes.find((n) => n.data.name === e.entityName)
+                            ? <span className="bundle-entity-ok">✓ 匹配</span>
+                            : <span className="bundle-entity-warn">⚠ 无匹配实体</span>}
+                        </li>
+                      ))}
+                    </ul>
+                    <button
+                      type="button"
+                      className="btn-primary"
+                      style={{ marginTop: 12, width: '100%' }}
+                      onClick={() => void handleImportBundle()}
+                      disabled={bundleImporting}
+                    >
+                      {bundleImporting ? <><Loader2 size={14} className="spin" /> 导入中…</> : <><Package size={14} /> 一键导入全部实体并重建关系</>}
+                    </button>
+                    {bundleLog.length > 0 && (
+                      <div className="bundle-log-panel">
+                        {bundleLog.map((line, i) => (
+                          <div key={i} className="bundle-log-line">{line}</div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+                {!bundleData && (
+                  <button
+                    type="button"
+                    className="btn-ghost"
+                    style={{ marginTop: 8, fontSize: 12 }}
+                    onClick={() => bundleRef.current?.click()}
+                  >
+                    <Upload size={12} /> 浏览文件…
+                  </button>
+                )}
               </div>
             )}
           </div>
@@ -5300,13 +5484,30 @@ function ExportCypherButton() {
     void exportTwinAsExcel(twinDatasets, nodes as EntityNode[], twinName)
   }
 
+  function handleExportCSV() {
+    if (twinDatasets.length === 0) { alert('当前孪生暂无实例数据，请先导入'); return }
+    void exportTwinAsCSV(twinDatasets, nodes as EntityNode[])
+  }
+
+  function handleExportJSON() {
+    if (twinDatasets.length === 0) { alert('当前孪生暂无实例数据，请先导入'); return }
+    const activeTwin = bizTwins.find((t) => t.id === activeBizTwinId)
+    exportTwinAsJSON(twinDatasets, nodes as EntityNode[], twinName, activeTwin?.modelIds[0] ?? '')
+  }
+
   return (
-    <div style={{ display: 'flex', gap: 6 }}>
+    <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
       <button type="button" className="btn-export-cypher" onClick={handleExportCypher} title="导出 Neo4j Cypher（可在 Neo4j Browser 中执行）">
         <Database size={14} /> 导出 Cypher
       </button>
-      <button type="button" className="btn-export-cypher" onClick={handleExportExcel} title="导出 Excel（每个 Sheet 可单独通过 CSV 导入 UI 重新导入）">
+      <button type="button" className="btn-export-cypher" onClick={handleExportExcel} title="导出 Excel 多 Sheet（需另存为 CSV 才可导入）">
         <FileDown size={14} /> 导出 Excel
+      </button>
+      <button type="button" className="btn-export-cypher" onClick={handleExportCSV} title="导出各实体为独立 CSV 文件，可直接通过「导入数据」Tab 重新导入">
+        <FileDown size={14} /> 导出 CSV
+      </button>
+      <button type="button" className="btn-export-cypher" onClick={handleExportJSON} title="将所有实体实例打包为单一 JSON 文件，可在另一系统通过「导入数据包」一键恢复">
+        <Package size={14} /> 导出数据包
       </button>
     </div>
   )
